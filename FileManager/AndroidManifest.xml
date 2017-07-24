@@ -102,7 +102,7 @@
             android:name="YOUMI_CHANNEL"
             android:value="0" />
 
-        <provider
+       <!-- <provider
             android:name=".bookmarks.BookmarksProvider"
             android:authorities="org.openintents.filemanager.bookmarks" />
         <provider
@@ -115,7 +115,7 @@
             android:name=".FileManagerProvider"
             android:authorities="org.openintents.filemanager"
             android:exported="true"
-            android:permission="android.permission.READ_EXTERNAL_STORAGE" />
+            android:permission="android.permission.READ_EXTERNAL_STORAGE" />-->
 
         <!-- Activities from OI Distribution Library -->
         <activity
@@ -138,10 +138,10 @@
                 android:resource="@xml/searchable" />
         </activity>
 
-        <provider
+     <!--   <provider
             android:name=".search.RecentsSuggestionsProvider"
             android:authorities="org.openintents.filemanager.search.SuggestionProvider" />
-
+-->
         <service android:name=".search.SearchService" />
 
         <activity android:name=".IntentFilterActivity">
@@ -216,7 +216,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TestActivity"></activity>
+        <activity android:name=".TestActivity" android:launchMode="singleTask"></activity>
     </application>
 
 </manifest>
