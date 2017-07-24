@@ -216,7 +216,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TestActivity"></activity>
+        <activity android:name=".TestActivity" android:launchMode="singleTask"></activity>
     </application>
 
 </manifest>
