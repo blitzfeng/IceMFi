@@ -225,6 +225,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 ++location;
                 if(location >= list.size())
                     location = 0;
+                mContext.getMainLooper();
                 Toast.makeText(mContext,"当前位置："+location,Toast.LENGTH_SHORT).show();
                 writeLocation(location);
 
