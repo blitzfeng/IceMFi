@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_bookmarks"
+        android:alphabeticShortcut="b"
+        android:icon="@drawable/ic_action_bookmarks"
+        app:showAsAction="ifRoom"
+        android:menuCategory="container"
+        android:orderInCategory="10"
+        android:title="启动任务">
+    </item>
+    <item
+        android:id="@+id/menu_endtask"
+        android:alphabeticShortcut="b"
+        android:icon="@drawable/ic_action_bookmarks"
+        app:showAsAction="ifRoom"
+        android:menuCategory="container"
+        android:orderInCategory="10"
+        android:title="结束任务">
+    </item>
+    <item
+        android:id="@+id/menu_search"
+        android:alphabeticShortcut="s"
+        android:icon="@drawable/ic_action_search"
+        app:showAsAction="ifRoom"
+        android:menuCategory="container"
+        android:orderInCategory="10"
+        android:title="展示">
+    </item>
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_action_settings"
+        app:showAsAction="never"
+        android:menuCategory="container"
+        android:title="下一条">
+    </item>
+
+
+</menu>

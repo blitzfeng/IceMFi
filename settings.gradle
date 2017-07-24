@@ -1,0 +1,2 @@
+include ':normaldemo', ':xadcheat'
+include 'FileManager'
