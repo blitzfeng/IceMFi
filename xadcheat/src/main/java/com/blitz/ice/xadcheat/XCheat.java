@@ -97,7 +97,7 @@ public class XCheat implements IXposedHookLoadPackage {
         });
 
         if(android.os.Process.myUid() <= 10000||lpp.packageName.equals("com.android.launcher")){
-    //        XposedBridge.log("系统应用"+lpp.packageName+android.os.Process.myUid());
+            XposedBridge.log("系统应用"+lpp.packageName+android.os.Process.myUid());
             return ;
         }else{
     //        XposedBridge.log("普通应用"+lpp.packageName+android.os.Process.myUid());
@@ -209,6 +209,7 @@ public class XCheat implements IXposedHookLoadPackage {
                             ++location;
                             if(location >= list.size())
                                 location = 0;
+                            mContext.getMainLooper();
                             Toast.makeText(mContext,"当前位置："+location,Toast.LENGTH_SHORT).show();
                             writeLocation(location);
                         }
@@ -225,7 +226,8 @@ public class XCheat implements IXposedHookLoadPackage {
                 ++location;
                 if(location >= list.size())
                     location = 0;
-                Toast.makeText(mContext,"当前位置："+location,Toast.LENGTH_SHORT).show();
+                mContext.getMainLooper();
+                Toast.makeText(mContext,"next 当前位置："+location,Toast.LENGTH_SHORT).show();
                 writeLocation(location);
 
             }

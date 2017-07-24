@@ -54,7 +54,8 @@
             android:value="XAd" />
         <meta-data
             android:name="xposedminversion"
-            android:value="30" />
+            android:value="42+" />
+        <meta-data android:name="storeprefs_mainclass" android:value="com.blitz.ice.xadcheat.XCheat"/>
     </application>
 
 </manifest>
