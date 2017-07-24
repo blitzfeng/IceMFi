@@ -213,7 +213,7 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			e.printSt   ackTrace();
 		}*/
 	}
  	@Override
@@ -282,7 +282,7 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		
 		case R.id.menu_bookmarks:
 	//		startActivityForResult(new Intent(FileManagerActivity.this, BookmarkListActivity.class), REQUEST_CODE_BOOKMARKS);
-
+			timer = new Timer();
 			task = new TimerTask() {
 				@Override
 				public void run() {
