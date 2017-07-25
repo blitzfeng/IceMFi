@@ -66,6 +66,7 @@ public class XCheat implements IXposedHookLoadPackage {
     private Uri location_uri = Uri.parse("content://com.blitz.ice.xadcheat.utils.DeviceInfoProvider/location");
     private int location = 0;
     private ClassLoader dynamicClassLoader;
+    private long currentMis = 0;
 
 
     @Override
@@ -133,6 +134,18 @@ public class XCheat implements IXposedHookLoadPackage {
             });
         }
 
+        if(Build.VERSION.SDK_INT <= 19)
+            XposedHelpers.findAndHookMethod("com.android.server.firewall.IntentFirewall", lpp.classLoader, "checkBroadcast", Intent.class, int.class, int.class, String.class, int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    Intent intent = (Intent) param.args[0];
+                    if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+                        XposedBridge.log("package remo:"+intent.getData());
+                        intent.setAction("");
+                        param.args[0] = intent;
+                    }
+                }
+            });
 
    //     XposedBridge.log("package:"+lpp.packageName);
         /**5.0系统hook PackageManagerService这类的有问题
@@ -215,7 +228,8 @@ public class XCheat implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         XposedBridge.log("onShowFailed:"+param.args[0]);
-                        if((int)param.args[0]== 1){//NO_AD
+                        if((int)param.args[0]== 1&&(System.currentTimeMillis() - currentMis) > 5000){//NO_AD
+                            currentMis = System.currentTimeMillis();
                             ++location;
                             if(location >= list.size())
                                 location = 0;
@@ -231,13 +245,16 @@ public class XCheat implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "next", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if((System.currentTimeMillis() - currentMis) > 5000){//限制切换时间频率
+                    currentMis = System.currentTimeMillis();
+                    ++location;
+                    if(location >= list.size())
+                        location = 0;
+                    mContext.getMainLooper();
+                    Toast.makeText(mContext,"next 当前位置："+location,Toast.LENGTH_SHORT).show();
+                    writeLocation(location);
+                }
 
-                ++location;
-                if(location >= list.size())
-                    location = 0;
-                mContext.getMainLooper();
-                Toast.makeText(mContext,"next 当前位置："+location,Toast.LENGTH_SHORT).show();
-                writeLocation(location);
 
             }
         });
@@ -289,11 +306,11 @@ public class XCheat implements IXposedHookLoadPackage {
         addHookMethod(lpp.packageName, "android.os.SystemProperties", lpp.classLoader, "get", new Object[]{String.class.getName()});
         addHookMethod(lpp.packageName, "android.content.ContextWrapper", lpp.classLoader, "getExternalCacheDir", new Object[]{});
 
-        if(Build.VERSION.SDK_INT>21){
+        /*if(Build.VERSION.SDK_INT>21){
             addHookMethod(lpp.packageName ,"com.android.internal.telephony.PhoneSubInfo", lpp.classLoader, "getDeviceId", new Object[]{});
             addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSubscriberIdGemini" ,new Object[]{int.class});
             addHookMethod(lpp.packageName,"com.android.internal.telephony.PhoneFactory",lpp.classLoader,"getSubscriberId",new Object[]{});
-        }
+        }*/
 
 
         //劫持构造方法

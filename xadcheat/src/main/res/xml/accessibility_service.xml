@@ -7,7 +7,7 @@
     android:canRetrieveWindowContent="true"
     android:label="@string/title"
     android:description="@string/description"
-    android:packageNames="com.android.packageinstaller"
+    android:packageNames="com.android.packageinstaller,com.google.android.packageinstaller"
     android:notificationTimeout="100"
     />
 

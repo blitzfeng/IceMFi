@@ -263,6 +263,17 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 						@Override
 						public void onShowFailed(int i) {
 							System.out.println("onShowFailed");
+							switch (i){
+								case 1:
+									Toast.makeText(FileManagerActivity.this,"没有广告",Toast.LENGTH_SHORT).show();
+									break;
+								case 2:
+									Toast.makeText(FileManagerActivity.this,"资源加载未完成",Toast.LENGTH_SHORT).show();
+									break;
+								case 3:
+									Toast.makeText(FileManagerActivity.this,"广告太频繁",Toast.LENGTH_SHORT).show();
+									break;
+							}
 						}
 
 						@Override
@@ -420,7 +431,17 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 
 						@Override
 						public void onShowFailed(int i) {
-
+							switch (i){
+								case 1:
+									Toast.makeText(FileManagerActivity.this,"没有广告",Toast.LENGTH_SHORT).show();
+									break;
+								case 2:
+									Toast.makeText(FileManagerActivity.this,"资源加载未完成",Toast.LENGTH_SHORT).show();
+									break;
+								case 3:
+									Toast.makeText(FileManagerActivity.this,"广告太频繁",Toast.LENGTH_SHORT).show();
+									break;
+							}
 						}
 
 						@Override

@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'blitzfeng'
             keyPassword 'shdizh'
-            storeFile file('D:/development/myworkplace/filemanager-master/IceMFi/keystore.jks')
+            storeFile file('../keystore.jks')
             storePassword 'shdizh'
         }
     }

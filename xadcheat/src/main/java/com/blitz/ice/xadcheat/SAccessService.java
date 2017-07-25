@@ -14,7 +14,7 @@ import java.util.List;
 
 public class SAccessService extends AccessibilityService {
     private static final String TAG = "SAccessService";
-    private String[] packages = {"com.android.packageinstaller"};
+    private String[] packages = {"com.android.packageinstaller","com.google.android.packageinstaller"};
     AccessibilityNodeInfo nodeInfo;
 
     public SAccessService() {
