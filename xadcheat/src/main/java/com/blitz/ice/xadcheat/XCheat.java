@@ -84,31 +84,61 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
-        //拦截广播
-        XposedHelpers.findAndHookMethod("com.android.server.firewall.IntentFirewall", lpp.classLoader, "checkBroadcast", Intent.class, int.class, int.class, String.class, int.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Intent intent = (Intent) param.args[0];
-                if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
-                    intent.setAction("");
-                    param.args[0] = intent;
-                }
-            }
-        });
-
-        if(android.os.Process.myUid() <= 10000||lpp.packageName.equals("com.android.launcher")){
-    //        XposedBridge.log("系统应用"+lpp.packageName+android.os.Process.myUid());
-            return ;
-        }else{
-    //        XposedBridge.log("普通应用"+lpp.packageName+android.os.Process.myUid());
-        }
-        if(mContext==null){
+        if (mContext == null) {
             final Object activityThread = XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", null), "currentActivityThread");
             mContext = (Context) XposedHelpers.callMethod(activityThread, "getSystemContext");
         }
+        if (!lpp.packageName.equals("android")){
+
+            if (android.os.Process.myUid() <= 10000 || lpp.packageName.equals("com.android.launcher")) {
+                //        XposedBridge.log("系统应用"+lpp.packageName+android.os.Process.myUid());
+                return;
+            } else {
+                //        XposedBridge.log("普通应用"+lpp.packageName+android.os.Process.myUid());
+            }
+    }else {
+            XposedBridge.log("pack:"+lpp.packageName+"--pid="+android.os.Process.myUid());
+           /* Class pmsCls = XposedHelpers.findClass("com.android.server.pm.PackageManagerService",lpp.classLoader);
+            XposedBridge.hookAllMethods(pmsCls, "generatePackageInfo", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    PackageInfo info = (PackageInfo) param.getResult();
+                    if(info.packageName.equals("de.robv.android.xposed.installer")){
+                        XposedBridge.log("generatePackageInfo");
+                        param.setResult(null);
+                    }
+                }
+            });
+            XposedHelpers.findAndHookMethod(pmsCls, "generatePackageInfoFromSettingsLPw",String.class,int.class,int.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    PackageInfo info = (PackageInfo) param.getResult();
+                    if(info.packageName.equals("de.robv.android.xposed.installer")){
+                        XposedBridge.log("generatePackageInfoFromSettingsLPw");
+                        param.setResult(null);
+                    }
+                }
+            });*/
+            //拦截广播
+            XposedHelpers.findAndHookMethod("com.android.server.firewall.IntentFirewall", lpp.classLoader, "checkBroadcast", Intent.class, int.class, int.class, String.class, int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    Intent intent = (Intent) param.args[0];
+                    if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+                        XposedBridge.log("package remo:"+intent.getData());
+                        intent.setAction("");
+                        param.args[0] = intent;
+                    }
+                }
+            });
+        }
+
 
    //     XposedBridge.log("package:"+lpp.packageName);
-
+        /**5.0系统hook PackageManagerService这类的有问题
+         * http://forum.xda-developers.com/xpos...7#post58840569
+         * https://github.com/rovo89/Xposed/issues/43
+         */
         PackageManager packageManager = mContext.getPackageManager();
         XposedHelpers.findAndHookMethod(packageManager.getClass(), "getInstalledPackages", int.class, new XC_MethodHook() {
             @Override
@@ -152,27 +182,7 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
-        Class pmsCls = XposedHelpers.findClass("com.android.server.pm.PackageManagerService",lpp.classLoader);
-        XposedBridge.hookAllMethods(pmsCls, "generatePackageInfo", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                PackageInfo info = (PackageInfo) param.getResult();
-                if(info.packageName.equals("de.robv.android.xposed.installer")){
-                    XposedBridge.log("generatePackageInfo");
-                    param.setResult(null);
-                }
-            }
-        });
-        XposedHelpers.findAndHookMethod(pmsCls, "generatePackageInfoFromSettingsLPw",String.class,int.class,int.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                PackageInfo info = (PackageInfo) param.getResult();
-                if(info.packageName.equals("de.robv.android.xposed.installer")){
-                                XposedBridge.log("generatePackageInfoFromSettingsLPw");
-                    param.setResult(null);
-                }
-            }
-        });
+
 
         if(!lpp.packageName.equals("com.og.filemanager")) {
 
@@ -226,7 +236,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 if(location >= list.size())
                     location = 0;
                 mContext.getMainLooper();
-                Toast.makeText(mContext,"当前位置："+location,Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext,"next 当前位置："+location,Toast.LENGTH_SHORT).show();
                 writeLocation(location);
 
             }
@@ -238,7 +248,7 @@ public class XCheat implements IXposedHookLoadPackage {
         //IMEI
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getDeviceId", new Object[]{});
     //    addHookMethod(lpp.packageName,"android.telephony.TelephonyManager", lpp.classLoader, "getDeviceId",new Object[]{int.class});
-        addHookMethod(lpp.packageName ,"com.android.internal.telephony.PhoneSubInfo", lpp.classLoader, "getDeviceId", new Object[]{});
+
 
         addHookMethod(lpp.packageName, Settings.Secure.class.getName(), lpp.classLoader, "getString", new Object[]{ContentResolver.class.getName(), String.class.getName()});
         addHookMethod(lpp.packageName, Settings.System.class.getName(), lpp.classLoader, "getString", new Object[]{ContentResolver.class.getName(), String.class.getName()});
@@ -246,8 +256,7 @@ public class XCheat implements IXposedHookLoadPackage {
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimSerialNumber", new Object[]{});
 
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSubscriberId", new Object[]{});
-   //     addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSubscriberIdGemini" ,new Object[]{int.class});
-   //     addHookMethod(lpp.packageName,"com.android.internal.telephony.PhoneFactory",lpp.classLoader,"getSubscriberId",new Object[]{});
+   //
 
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimOperator", new Object[]{});
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimOperatorName", new Object[]{});
@@ -280,7 +289,11 @@ public class XCheat implements IXposedHookLoadPackage {
         addHookMethod(lpp.packageName, "android.os.SystemProperties", lpp.classLoader, "get", new Object[]{String.class.getName()});
         addHookMethod(lpp.packageName, "android.content.ContextWrapper", lpp.classLoader, "getExternalCacheDir", new Object[]{});
 
-
+        if(Build.VERSION.SDK_INT>21){
+            addHookMethod(lpp.packageName ,"com.android.internal.telephony.PhoneSubInfo", lpp.classLoader, "getDeviceId", new Object[]{});
+            addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSubscriberIdGemini" ,new Object[]{int.class});
+            addHookMethod(lpp.packageName,"com.android.internal.telephony.PhoneFactory",lpp.classLoader,"getSubscriberId",new Object[]{});
+        }
 
 
         //劫持构造方法

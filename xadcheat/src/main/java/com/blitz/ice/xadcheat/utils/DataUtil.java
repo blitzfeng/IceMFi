@@ -73,8 +73,8 @@ public class DataUtil {
             InputStream is = assetManager.open("imei1");
             Reader rr = new InputStreamReader(is);
             BufferedReader reader = new BufferedReader(rr);
-            while (reader.readLine()!=null){
-                String imei = reader.readLine();
+            String imei = null;
+            while ((imei = reader.readLine())!=null){
                 System.out.println("im:"+imei);
                 list.add(imei.trim());
             }
@@ -106,8 +106,8 @@ public class DataUtil {
             InputStream is = assetManager.open("imsi1");
             Reader rr = new InputStreamReader(is);
             BufferedReader reader = new BufferedReader(rr);
-            while (reader.readLine()!=null){
-                String imsi = reader.readLine();
+            String imsi = null;
+            while ((imsi = reader.readLine())!=null){
                 System.out.println("imsi:"+imsi);
                 list.add(imsi.trim());
             }
@@ -116,6 +116,44 @@ public class DataUtil {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public static String generateIMEI() {// calculator IMEI
+        int[] begins = {35,86,86,86};
+        int begin = begins[new Random().nextInt(4)];
+        int r1 = 10000 + new java.util.Random().nextInt(90000);
+        int r2 = 1000000 + new java.util.Random().nextInt(9000000);
+        String input = begin +"" + r1 + "" + r2;
+        char[] ch = input.toCharArray();
+        int a = 0, b = 0;
+        for (int i = 0; i < ch.length; i++) {
+            int tt = Integer.parseInt(ch[i] + "");
+            if (i % 2 == 0) {
+                a = a + tt;
+            } else {
+                int temp = tt * 2;
+                b = b + temp / 10 + temp % 10;
+            }
+        }
+        int last = (a + b) % 10;
+        if (last == 0) {
+            last = 0;
+        } else {
+            last = 10 - last;
+        }
+        return input + last;
+    }
+
+    public static String generateIMSI() {
+        // 460022535025034
+        String title = "4600";
+        int second = 0;
+        do {
+            second = new java.util.Random().nextInt(8);
+        } while (second == 4);
+        int r1 = 10000 + new java.util.Random().nextInt(90000);
+        int r2 = 10000 + new java.util.Random().nextInt(90000);
+        return title + "" + second + "" + r1 + "" + r2;
     }
 
     public static String generateSerial(){

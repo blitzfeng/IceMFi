@@ -105,6 +105,9 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 							});*/
 					FileManagerActivity.this.startActivity(new Intent(FileManagerActivity.this,TestActivity.class));
 					break;
+                case 2:
+                    next();
+                    break;
 			}
 		}
 	};
@@ -294,7 +297,7 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 					count++;
 					System.out.println("count="+count);
 					if(count>=6) {
-						next();
+						handler.sendEmptyMessage(2);
 						count = 0;
 					}
 

@@ -1,6 +1,8 @@
 package com.og.filemanager;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
@@ -48,6 +50,15 @@ public class TestActivity extends DistributionLibraryFragmentActivity {
                         System.out.println("onSpotClosed");
                     }
                 });
+
+        new Handler().postDelayed(new Runnable() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+            @Override
+            public void run() {
+                if(!TestActivity.this.isDestroyed())
+                    TestActivity.this.finish();
+            }
+        },7000);
     }
 
     public void start(View v){

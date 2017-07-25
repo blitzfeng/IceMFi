@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         String ss = DataUtil.getRandom(15,0);
         System.out.println("ss:"+ss);
 
-System.out.println("n:"+n()+"--"+m());
+/*System.out.println("n:"+n()+"--"+m());
         System.out.println("a:"+a(n()+m()));
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -54,7 +54,9 @@ System.out.println("n:"+n()+"--"+m());
         Log.d("sim operator",telephonyManager.getSimOperatorName());
         Log.d("phone type",telephonyManager.getPhoneType()+"");
         Log.d("imsi",telephonyManager.getSubscriberId());
-        Log.d("simnum",telephonyManager.getSimSerialNumber());
+        Log.d("simnum",telephonyManager.getSimSerialNumber());*/
+
+        System.out.println("imei:"+DataUtil.generateIMEI());
 
         dbDao = new DBDao(this);
 
@@ -102,16 +104,18 @@ System.out.println("n:"+n()+"--"+m());
         List<String> imsiList = DataUtil.getImsi(this);
         int imeiSize = imeiList.size();
         int imsiSize = imsiList.size();
-        for(int i=0;i<200;i++){
+        for(int i=0;i<500;i++){
 
             DeviceBean bean = new DeviceBean();
             String operatorName = DataUtil.generateSimOperateorName();
             bean.setSimOperatorName(operatorName);
             bean.setSimOperator(DataUtil.getSimOperator(operatorName));
-            if(i<imeiSize)
+            /*if(i<imeiSize)
                 bean.setImei(imeiList.get(i));
             if(i<imsiSize)
-                bean.setImsi(imsiList.get(i));
+                bean.setImsi(imsiList.get(i));*/
+            bean.setImsi(DataUtil.generateIMSI());
+            bean.setImei(DataUtil.generateIMEI());
             //    bean.setPhoneNum();
             bean.setNetworkType(DataUtil.generateNetworkType()+"");
             String brand = DataUtil.getBrand();
