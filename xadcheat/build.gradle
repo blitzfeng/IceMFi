@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'blitzfeng'
             keyPassword 'shdizh'
-            storeFile file('H:/study/android/workplace/file/IceMFi/keystore.jks')
+            storeFile file('D:/development/myworkplace/filemanager-master/IceMFi/keystore.jks')
             storePassword 'shdizh'
         }
     }
@@ -27,8 +27,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
         }
-    }
-    productFlavors {
     }
 }
 

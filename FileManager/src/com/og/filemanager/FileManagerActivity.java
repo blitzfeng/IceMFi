@@ -79,12 +79,35 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 					SpotManager.getInstance(FileManagerActivity.this).onStop();
 					break;
 				case 1:
+					/*SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this,
+							new SpotListener() {
+								@Override
+								public void onShowSuccess() {
+									System.out.println("onShowSuccess");
 
+
+								}
+
+								@Override
+								public void onShowFailed(int i) {
+									System.out.println("onShowFailed");
+								}
+
+								@Override
+								public void onSpotClosed() {
+									System.out.println("onSpotClosed");
+								}
+
+								@Override
+								public void onSpotClicked(boolean b) {
+									System.out.println("onSpotClosed");
+								}
+							});*/
 					FileManagerActivity.this.startActivity(new Intent(FileManagerActivity.this,TestActivity.class));
 					break;
-				case 2:
-					next();
-					break;
+                case 2:
+                    next();
+                    break;
 			}
 		}
 	};
@@ -193,7 +216,7 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			e.printSt   ackTrace();
 		}*/
 	}
  	@Override
@@ -262,7 +285,7 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		
 		case R.id.menu_bookmarks:
 	//		startActivityForResult(new Intent(FileManagerActivity.this, BookmarkListActivity.class), REQUEST_CODE_BOOKMARKS);
-
+			timer = new Timer();
 			task = new TimerTask() {
 				@Override
 				public void run() {

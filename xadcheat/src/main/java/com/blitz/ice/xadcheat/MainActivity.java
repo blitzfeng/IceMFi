@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d("imsi",telephonyManager.getSubscriberId());
         Log.d("simnum",telephonyManager.getSimSerialNumber());*/
 
+        System.out.println("imei:"+DataUtil.generateIMEI());
+
         dbDao = new DBDao(this);
 
         Log.d("ssid","--"+DataUtil.generateSSID());
@@ -102,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
         List<String> imsiList = DataUtil.getImsi(this);
         int imeiSize = imeiList.size();
         int imsiSize = imsiList.size();
-        System.out.println("imeiSize="+imeiSize+"--imsiSize"+imsiSize);
-        for(int i=0;i<200;i++){
+        for(int i=0;i<500;i++){
 
             DeviceBean bean = new DeviceBean();
             String operatorName = DataUtil.generateSimOperateorName();
