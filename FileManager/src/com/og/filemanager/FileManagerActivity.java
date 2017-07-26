@@ -22,7 +22,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -44,7 +46,11 @@ import com.og.filemanager.compatibility.HomeIconHelper;
 import com.og.filemanager.lists.SimpleFileListFragment;
 import com.og.filemanager.util.UIUtils;
 import com.og.intents.FileManagerIntents;
+import com.og.util.IPBean;
 import com.og.util.MenuIntentOptionsWithIcons;
+import com.og.util.NetUtil;
+import com.og.util.Util;
+import com.og.util.WifiProxyManager;
 
 import net.youmi.android.AdManager;
 import net.youmi.android.nm.cm.ErrorCode;
@@ -58,7 +64,7 @@ import java.lang.reflect.Field;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class FileManagerActivity extends DistributionLibraryFragmentActivity {
+public class FileManagerActivity extends DistributionLibraryFragmentActivity implements SpotListener {
 	@VisibleForTesting
 	public static final String FRAGMENT_TAG = "ListFragment";
     
@@ -68,8 +74,12 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 	private SimpleFileListFragment mFragment;
 	private TimerTask task;
 	private Timer timer;
-	private boolean isStop = false;
+	/**
+	 * 0 表示正常  1表示暂停   2表示终止
+	 */
+	private int isStop = 0;
 	private int count = 0;
+	private WifiProxyManager wifiProxyManager;
 	private Handler handler = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
@@ -79,34 +89,12 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 					SpotManager.getInstance(FileManagerActivity.this).onStop();
 					break;
 				case 1:
-					/*SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this,
-							new SpotListener() {
-								@Override
-								public void onShowSuccess() {
-									System.out.println("onShowSuccess");
 
-
-								}
-
-								@Override
-								public void onShowFailed(int i) {
-									System.out.println("onShowFailed");
-								}
-
-								@Override
-								public void onSpotClosed() {
-									System.out.println("onSpotClosed");
-								}
-
-								@Override
-								public void onSpotClicked(boolean b) {
-									System.out.println("onSpotClosed");
-								}
-							});*/
 					FileManagerActivity.this.startActivity(new Intent(FileManagerActivity.this,TestActivity.class));
 					break;
                 case 2:
-                    next();
+                    setProxy();
+					isStop = 1;
                     break;
 			}
 		}
@@ -147,7 +135,10 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		receiver = new ShowAdReceiver();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction("package removed");
+		filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
 		registerReceiver(receiver,filter);
+
+
 		
 		// Enable home button.
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -181,45 +172,24 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		SpotManager.getInstance(this).setAnimationType(SpotManager.ANIMATION_TYPE_NONE);
 
 		timer = new Timer();
-/*
-
-		SpotManager.getInstance(this).showSpot(this,
-				new SpotListener() {
-					@Override
-					public void onShowSuccess() {
-						System.out.println("onShowSuccess");
-					}
-
-					@Override
-					public void onShowFailed(int i) {
-						System.out.println("onShowFailed");
-					}
-
-					@Override
-					public void onSpotClosed() {
-						System.out.println("onSpotClosed");
-					}
-
-					@Override
-					public void onSpotClicked(boolean b) {
-						System.out.println("onSpotClosed");
-					}
-				});
-*/
-		/*Class spotManagerCls = SpotManager.class;
-		try {
-			Field cField = AdManager.getInstance(this).getClass().getDeclaredField("d");
-			cField.setAccessible(true);
-			System.out.println("cField.getName()="+cField.getName());
-			Object cValue = (Object) cField.get(AdManager.getInstance(this));
-			System.out.println("cvalue:"+cValue.toString());
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printSt   ackTrace();
-		}*/
+		setProxy();
 	}
- 	@Override
+
+	private void setProxy() {
+		if(Util.list!=null&&Util.list.size()>0){
+			checkLocation();
+			IPBean bean = Util.list.get(Util.location);
+			if(wifiProxyManager == null)
+				wifiProxyManager = new WifiProxyManager(this);
+			if(Util.getBuild()<=19)
+				wifiProxyManager.setWifiProxySettings(bean.getIp(),bean.getPort());
+			else
+				wifiProxyManager.setWifiProxySettings(bean.getIp(),bean.getPort(),true);
+			Toast.makeText(this,"设置当前ip:"+bean.getPort()+"--当前ip location="+Util.location,Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	@Override
  	public boolean onCreateOptionsMenu(Menu menu) {
  		MenuInflater inflater = new MenuInflater(this);
  		inflater.inflate(R.menu.main, menu);
@@ -253,54 +223,23 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		
 		case R.id.menu_search:
 	//		onSearchRequested();
-			SpotManager.getInstance(this).showSpot(this,
-					new SpotListener() {
-						@Override
-						public void onShowSuccess() {
-							System.out.println("onShowSuccess");
-						}
-
-						@Override
-						public void onShowFailed(int i) {
-							System.out.println("onShowFailed");
-							switch (i){
-								case 1:
-									Toast.makeText(FileManagerActivity.this,"没有广告",Toast.LENGTH_SHORT).show();
-									break;
-								case 2:
-									Toast.makeText(FileManagerActivity.this,"资源加载未完成",Toast.LENGTH_SHORT).show();
-									break;
-								case 3:
-									Toast.makeText(FileManagerActivity.this,"广告太频繁",Toast.LENGTH_SHORT).show();
-									break;
-							}
-						}
-
-						@Override
-						public void onSpotClosed() {
-							System.out.println("onSpotClosed");
-						}
-
-						@Override
-						public void onSpotClicked(boolean b) {
-							System.out.println("onSpotClosed");
-						}
-					});
+			SpotManager.getInstance(this).showSpot(FileManagerActivity.this,this);
 			return true;
 		
 		case R.id.menu_settings:
 			/*Intent intent = new Intent(this, PreferenceActivity.class);
 			startActivity(intent);*/
-			next();
+			handler.sendEmptyMessage(2);
 			return true;
 		
 		case R.id.menu_bookmarks:
 	//		startActivityForResult(new Intent(FileManagerActivity.this, BookmarkListActivity.class), REQUEST_CODE_BOOKMARKS);
 			timer = new Timer();
+			isStop = 0;
 			task = new TimerTask() {
 				@Override
 				public void run() {
-					if(isStop)
+					if(isStop == 1 || isStop == 2)
 						return;
 					/*if(SpotManager.getInstance(FileManagerActivity.this).isSpotShowing())
 						handler.sendEmptyMessage(0);*/
@@ -308,8 +247,9 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 					count++;
 					System.out.println("count="+count);
 					if(count>=6) {
-						handler.sendEmptyMessage(2);
 						count = 0;
+						handler.sendEmptyMessage(2);
+
 					}
 
 				}
@@ -321,7 +261,8 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 			timer.cancel();
 			if(task!=null)
 				task.cancel();
-			isStop = true;
+			isStop = 2;
+
 			Toast.makeText(this,"结束任务",Toast.LENGTH_SHORT).show();
 			break;
 
@@ -336,6 +277,8 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 	private void next() {
 
 	}
+
+
 
 	// The following methods should properly handle back button presses on every API Level.
 	@Override
@@ -412,8 +355,76 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 		// 插屏广告
 		SpotManager.getInstance(this).onDestroy();
 		SpotManager.getInstance(this).onAppExit();
+		if(wifiProxyManager!=null){
+			if(Util.getBuild()<=19)
+				wifiProxyManager.unsetWifiProxySettings();
+			else
+				wifiProxyManager.unsetWifiProxySettings(true);
+		}
+
 		if(receiver!=null)
 			unregisterReceiver(receiver);
+	}
+
+	@Override
+	public void onShowSuccess() {
+
+	}
+
+	@Override
+	public void onShowFailed(int i) {
+		switch (i){
+			case 0:
+				Toast.makeText(FileManagerActivity.this,"网络出现问题，10秒后重连，请等待",Toast.LENGTH_SHORT).show();
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this,FileManagerActivity.this);
+					}
+				},30*1000);
+				break;
+			case 1:
+				Toast.makeText(FileManagerActivity.this,"没有广告，进行切换ip、数据",Toast.LENGTH_SHORT).show();
+				setProxy();
+				break;
+			case 2:
+				Toast.makeText(FileManagerActivity.this,"资源加载未完成，10秒后重连",Toast.LENGTH_SHORT).show();
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this,FileManagerActivity.this);
+					}
+				},10*1000);
+				break;
+			case 3:
+				Toast.makeText(FileManagerActivity.this,"广告太频繁,15秒后重连，请等待",Toast.LENGTH_SHORT).show();
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this,FileManagerActivity.this);
+					}
+				},15*1000);
+				break;
+		}
+	}
+
+	@Override
+	public void onSpotClosed() {
+
+	}
+
+	@Override
+	public void onSpotClicked(boolean b) {
+
+	}
+
+	class IPRunnable implements Runnable{
+
+		@Override
+		public void run() {
+			Util.list = NetUtil.getIp();
+			Util.location = 0;
+		}
 	}
 
 	class ShowAdReceiver extends BroadcastReceiver{
@@ -423,38 +434,46 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity {
 			if("package removed".equals(intent.getAction())){
 				System.out.println("--------------------------------------------");
 				if(!SpotManager.getInstance(context).isSpotShowing())
-					SpotManager.getInstance(context).showSpot(context, new SpotListener() {
-						@Override
-						public void onShowSuccess() {
+					SpotManager.getInstance(context).showSpot(context,FileManagerActivity.this);
+			}else if(intent.getAction().equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)){
+				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+				if (info.getState().equals(NetworkInfo.State.CONNECTED)) {
+					System.out.println("-----wifi connect");
+					Util.location ++;
+					if(!checkLocation())
+						return ;
+					boolean b = NetUtil.ping();
+					if(!b){
+						Toast.makeText(FileManagerActivity.this,"检测代理可以性:不可用  切换下个ip",Toast.LENGTH_SHORT).show();
+						Util.location ++;
+						if(!checkLocation())
+							return ;
+					}else {
+						Toast.makeText(FileManagerActivity.this,"检测代理可以性:可用",Toast.LENGTH_SHORT).show();
 
-						}
+						AdManager.getInstance(FileManagerActivity.this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
+						if(isStop == 1) {
+							isStop = 0;
+							System.out.println("设置isStop = 0");
+						}else if(!SpotManager.getInstance(context).isSpotShowing())
+							SpotManager.getInstance(context).showSpot(context,FileManagerActivity.this);
+					}
 
-						@Override
-						public void onShowFailed(int i) {
-							switch (i){
-								case 1:
-									Toast.makeText(FileManagerActivity.this,"没有广告",Toast.LENGTH_SHORT).show();
-									break;
-								case 2:
-									Toast.makeText(FileManagerActivity.this,"资源加载未完成",Toast.LENGTH_SHORT).show();
-									break;
-								case 3:
-									Toast.makeText(FileManagerActivity.this,"广告太频繁",Toast.LENGTH_SHORT).show();
-									break;
-							}
-						}
-
-						@Override
-						public void onSpotClosed() {
-
-						}
-
-						@Override
-						public void onSpotClicked(boolean b) {
-
-						}
-					});
+				}
 			}
 		}
+	}
+
+	private boolean checkLocation() {
+		if(Util.location >= Util.list.size()-1) {//轮到list倒数第二条数据时就重新请求ip
+			Util.threadPool.execute(new IPRunnable());
+			return true;
+		}
+		if(Util.location >= Util.list.size()){
+			Util.threadPool.execute(new IPRunnable());
+			Toast.makeText(this, "列表为空或此列表ip已使用完毕",Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		return true;
 	}
 }

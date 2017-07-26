@@ -9,12 +9,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.og.util.NetUtil;
 import com.og.util.PermissionHelper;
+import com.og.util.Util;
 
 import net.youmi.android.AdManager;
 import net.youmi.android.nm.sp.SpotListener;
 import net.youmi.android.nm.sp.SpotManager;
 import net.youmi.android.nm.vdo.VideoAdManager;
+
+import java.util.concurrent.Executor;
 
 public class SplashActivity extends Activity {
 
@@ -24,7 +28,12 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-
+        Util.threadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                Util.list = NetUtil.getIp();
+            }
+        });
 
         // 当系统为6.0以上时，需要申请权限
         mPermissionHelper = new PermissionHelper(this);
@@ -46,8 +55,7 @@ public class SplashActivity extends Activity {
                 mPermissionHelper.applyPermissions();
             }
         }
-        // 请求视频广告
-        VideoAdManager.getInstance(this).requestVideoAd(this);
+
         //    SplashViewSettings splashViewSettings = new SplashViewSettings();
        /* SpotManager.getInstance(this).setImageType(SpotManager.IMAGE_TYPE_VERTICAL);
         SpotManager.getInstance(this).setAnimationType(SpotManager.ANIMATION_TYPE_NONE);*/

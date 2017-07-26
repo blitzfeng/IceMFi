@@ -91,7 +91,7 @@ public class XCheat implements IXposedHookLoadPackage {
         }
         if (!lpp.packageName.equals("android")){
 
-            if (android.os.Process.myUid() <= 10000 || lpp.packageName.equals("com.android.launcher")) {
+            if (android.os.Process.myUid() <= 10000 || lpp.packageName.equals("com.android.launcher")||lpp.packageName.equals("com.htc.launcher")||lpp.packageName.equals("com.android.systemui")) {
                 //        XposedBridge.log("系统应用"+lpp.packageName+android.os.Process.myUid());
                 return;
             } else {
@@ -242,7 +242,7 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
-        XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "next", new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "setProxy", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if((System.currentTimeMillis() - currentMis) > 5000){//限制切换时间频率
@@ -251,7 +251,7 @@ public class XCheat implements IXposedHookLoadPackage {
                     if(location >= list.size())
                         location = 0;
                     mContext.getMainLooper();
-                    Toast.makeText(mContext,"next 当前位置："+location,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext,"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
                     writeLocation(location);
                 }
 
@@ -640,7 +640,7 @@ public class XCheat implements IXposedHookLoadPackage {
                         XposedBridge.log("获取subscriberId为空");
                     }
                 }else if("getSimSerialNumber".equals(methodName)){//手机卡序列号
-                        XposedBridge.log("getSimSerialNumber");
+             //           XposedBridge.log("getSimSerialNumber");
                         String simSerialNumber = bean.getSimSerialNumber();
                         if(!TextUtils.isEmpty(simSerialNumber)){
                             XposedBridge.log("修改simSerialNumber");
@@ -670,7 +670,7 @@ public class XCheat implements IXposedHookLoadPackage {
                         String deviceid = bean.getImei();
                         XposedBridge.log("imei="+deviceid);
                         if(!TextUtils.isEmpty(deviceid)){
-                            XposedBridge.log("修改deviceid");
+                 //           XposedBridge.log("修改deviceid");
                             param.setResult(deviceid);
                         }else{
                             XposedBridge.log("获取deviceid为空");
