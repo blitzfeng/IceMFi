@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Created by blitzfeng on 2017/7/26.
@@ -23,6 +24,7 @@ public class Util {
     public static List<IPBean> list = new ArrayList<>();
     public static int location = 0;
     public static ExecutorService threadPool = Executors.newCachedThreadPool();
+    public static ScheduledExecutorService timerThread = Executors.newScheduledThreadPool(5);
 
 
     public static int getBuild(){

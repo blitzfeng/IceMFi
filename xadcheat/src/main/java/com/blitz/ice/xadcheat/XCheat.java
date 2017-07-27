@@ -1,5 +1,6 @@
 package com.blitz.ice.xadcheat;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
@@ -214,7 +215,6 @@ public class XCheat implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Class spotListenerCls = param.args[1].getClass();
-                XposedBridge.log("class:"+spotListenerCls.getName());
                 /**
                  * public static final int NON_NETWORK = 0;
                  * public static final int NON_AD = 1;
@@ -227,13 +227,14 @@ public class XCheat implements IXposedHookLoadPackage {
                 XposedHelpers.findAndHookMethod(spotListenerCls, "onShowFailed", int.class,new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        XposedBridge.log("onShowFailed:"+param.args[0]);
+    //                    XposedBridge.log("onShowFailed:"+param.args[0]);
                         if((int)param.args[0]== 1&&(System.currentTimeMillis() - currentMis) > 5000){//NO_AD
                             currentMis = System.currentTimeMillis();
                             ++location;
                             if(location >= list.size())
                                 location = 0;
-                            Toast.makeText(mContext,"当前位置："+location,Toast.LENGTH_SHORT).show();
+                            Toast.makeText((Activity)param.thisObject,"当前位置："+location,Toast.LENGTH_SHORT).show();
+                            XposedBridge.log("当前位置："+location);
                             writeLocation(location);
                         }
                     }
@@ -250,8 +251,10 @@ public class XCheat implements IXposedHookLoadPackage {
                     ++location;
                     if(location >= list.size())
                         location = 0;
-                    mContext.getMainLooper();
-                    Toast.makeText(mContext,"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
+                //    mContext.getMainLooper();
+        //            ((Activity)param.thisObject).getMainLooper();
+       //             Toast.makeText((Activity)param.thisObject,"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
+                    XposedBridge.log("setProxy 当前位置："+location);
                     writeLocation(location);
                 }
 
@@ -374,17 +377,6 @@ public class XCheat implements IXposedHookLoadPackage {
     }
 
     private void writeLocation(int location) {
-        /*File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+File.pathSeparator+"lo");
-        XposedBridge.log("lo:"+file.getAbsolutePath());
-        try {
-            FileOutputStream fos = new FileOutputStream(file,false);
-            fos.write((location+"").getBytes());
-            fos.flush();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
 
         Cursor cursor = mContext.getContentResolver().query(location_uri,null,null,null,null);
         if(cursor == null){
@@ -409,26 +401,7 @@ public class XCheat implements IXposedHookLoadPackage {
         }
     }
     private int readLocation(){
-        /*File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+File.pathSeparator+"lo");
-        if(!file.exists())
-            return  0;
-        XposedBridge.log("lo:"+file.getAbsolutePath());
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            byte[] b = new byte[100];
-            int len = 0;
-            String s = "";
-            while ((len=fis.read(b))!=-1){
-                s = new String(b,0,len);
-                XposedBridge.log("s:"+s);
-            }
-            return Integer.parseInt(s);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;*/
+
         int lo = 0;
         Cursor cursor = mContext.getContentResolver().query(location_uri,null,null,null,null);
         if(cursor == null){
@@ -568,7 +541,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 }else if("getBSSID".equals(methodName)){//无线路由地址
                         String m_BSSID = bean.getBssid();
                         if(!TextUtils.isEmpty(m_BSSID)){
-                            XposedBridge.log("修改m_BSSID");
+                            MLog.d("Xposed","修改m_BSSID");
                             param.setResult(m_BSSID);
                         }else{
                             XposedBridge.log("获取m_BSSID为空");
@@ -576,7 +549,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 }else if("getSSID".equals(methodName)){//无线路由名
                         String m_SSID = bean.getSsid();
                         if(!TextUtils.isEmpty(m_SSID)){
-                            XposedBridge.log("修改m_SSID");
+                            MLog.d("Xposed","修改m_SSID");
                             param.setResult(m_SSID);
                         }else{
                             XposedBridge.log("获取m_SSID为空");
@@ -584,7 +557,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 }else if("getMacAddress".equals(methodName)){//mac地址
                         String m_macAddress = bean.getMac();
                         if(!TextUtils.isEmpty(m_macAddress)){
-                            XposedBridge.log("修改m_macAddress");
+                            MLog.d("Xposed","修改m_macAddress");
                             param.setResult(m_macAddress);
                         }else{
                             XposedBridge.log("获取m_macAddress为空");
@@ -634,7 +607,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 }else if("getSubscriberId".equals(methodName)||"getSubscriberIdGemini".equals(methodName)){//IMSI
                     String subscriberId = bean.getImsi();
                     if(!TextUtils.isEmpty(subscriberId)){
-                        XposedBridge.log("修改subscriberId");
+                        MLog.d("Xposed","修改subscriberId");
                         param.setResult(subscriberId);
                     }else{
                         XposedBridge.log("获取subscriberId为空");
@@ -643,7 +616,7 @@ public class XCheat implements IXposedHookLoadPackage {
              //           XposedBridge.log("getSimSerialNumber");
                         String simSerialNumber = bean.getSimSerialNumber();
                         if(!TextUtils.isEmpty(simSerialNumber)){
-                            XposedBridge.log("修改simSerialNumber");
+                            MLog.d("Xposed","修改simSerialNumber");
                             param.setResult(simSerialNumber);
                         }else{
                             XposedBridge.log("获取simSerialNumber为空");
@@ -668,7 +641,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 }else if("getDeviceId".equals(methodName)){//device_id
 
                         String deviceid = bean.getImei();
-                        XposedBridge.log("imei="+deviceid);
+                        MLog.d("Xposed","imei="+deviceid);
                         if(!TextUtils.isEmpty(deviceid)){
                  //           XposedBridge.log("修改deviceid");
                             param.setResult(deviceid);

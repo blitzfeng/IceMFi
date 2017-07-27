@@ -244,6 +244,13 @@ public class WifiProxyManager {
         }
     }
 
+    public void unset(){
+        if(Util.getBuild()<=19)
+            unsetWifiProxySettings();
+        else
+            unsetWifiProxySettings(true);
+    }
+
     public void unsetWifiProxySettings() {
         WifiManager manager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         WifiConfiguration config = GetCurrentWifiConfiguration(manager);
