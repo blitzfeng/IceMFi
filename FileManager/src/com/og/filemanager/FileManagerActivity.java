@@ -16,14 +16,12 @@
 
 package com.og.filemanager;
 
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -33,7 +31,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.VisibleForTesting;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,6 +38,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.og.filemanager.bookmarks.BookmarkListActivity;
+import com.og.filemanager.db.DBDao;
 import com.og.filemanager.files.FileHolder;
 import com.og.filemanager.util.FileUtils;
 import com.og.filemanager.compatibility.HomeIconHelper;
@@ -55,22 +53,17 @@ import com.og.util.Util;
 import com.og.util.WifiProxyManager;
 
 import net.youmi.android.AdManager;
-import net.youmi.android.nm.cm.ErrorCode;
-import net.youmi.android.nm.sp.SplashViewSettings;
 import net.youmi.android.nm.sp.SpotListener;
 import net.youmi.android.nm.sp.SpotManager;
-import net.youmi.android.nm.vdo.VideoAdManager;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -92,7 +85,10 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 	private int isStop = 0;
 	private int count = 0;
 	private boolean isTaskRunning = false;
+	private int location = 0;
 	private WifiProxyManager wifiProxyManager;
+	private DBDao dbDao;
+	private IPBean bean;
 	private Handler handler = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
@@ -105,9 +101,9 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 					FileManagerActivity.this.startActivity(new Intent(FileManagerActivity.this,TestActivity.class));
 					break;
                 case 2:
-                	MLog.e("file","准备切换代理");
+                	/*MLog.e("file","准备切换代理");
                     setProxy();
-					isStop = 1;
+					isStop = 1;*/
                     break;
 				case 3:
 			//		AdManager.getInstance(FileManagerActivity.this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
@@ -115,9 +111,19 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 						isStop = 0;
 						MLog.d("file","设置isStop = 0");
 					}else if(!SpotManager.getInstance(FileManagerActivity.this).isSpotShowing()) {
-						SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this, FileManagerActivity.this);
+			//			SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this, FileManagerActivity.this);
 						MLog.d("file","network");
 					}
+					break;
+                case 4:
+                    String ip = (String) msg.obj;
+                    Toast.makeText(FileManagerActivity.this,"设置当前ip:"+ip+"--当前ip location="+location,Toast.LENGTH_SHORT).show();
+                    break;
+				case 5:
+					checkLocation();
+					break;
+				case 6:
+					Toast.makeText(FileManagerActivity.this,"一分钟后重新请求ip",Toast.LENGTH_SHORT).show();
 					break;
 			}
 		}
@@ -161,7 +167,18 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 		filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
 		registerReceiver(receiver,filter);
 
+		dbDao = new DBDao(this);
 
+		location = dbDao.queryLocation();
+		if(location == 0){//无数据
+			NetUtil.getIP(this);
+		}else {
+			IPBean bean = dbDao.queryIP(location);
+			if(bean == null)
+				NetUtil.getIP(this);
+			else
+				setProxy(bean);
+		}
 		
 		// Enable home button.
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -195,61 +212,32 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 		SpotManager.getInstance(this).setAnimationType(SpotManager.ANIMATION_TYPE_NONE);
 
 		timer = new Timer();
-		setProxy();
 	}
 
+
+
 	int requestCount = 0;
-	private void setProxy() {
-		if(Util.list!=null&&Util.list.size()>0){
-			MLog.d("file","setProxy");
-			++Util.location;
-			if(!checkLocation()){
-				Toast.makeText(this,"请求ip失败，或者list中无可用ip",Toast.LENGTH_SHORT).show();
-				MLog.e("file","请求ip失败，或者list中无可用ip");
-			}
-			IPBean bean = Util.list.get(Util.location);
-			if(wifiProxyManager == null)
-				wifiProxyManager = new WifiProxyManager(this);
-			if(Util.getBuild()<=19)
-				wifiProxyManager.setWifiProxySettings(bean.getIp(),bean.getPort());
-			else
-				wifiProxyManager.setWifiProxySettings(bean.getIp(),bean.getPort(),true);
-			Toast.makeText(this,"设置当前ip:"+bean.getIp()+"--当前ip location="+Util.location,Toast.LENGTH_SHORT).show();
-			MLog.e("file","设置当前ip:"+bean.getIp()+"--当前ip location="+Util.location);
-		}else {
-			MLog.e("file", "setproxy list size=" + Util.list.size());
-			if(Util.list.size() == 0){
-				isTaskRunning = true;
-				requestCount = 0;
-				final Timer netTimer = new Timer();
-				TimerTask task = new TimerTask() {
-					@Override
-					public void run() {
-						MLog.e("file","重新请求ip");
-						handler.sendEmptyMessage(0);
-						if(!isTaskRunning)
-							return;
-						if(++requestCount >5) {
-							if(wifiProxyManager == null)
-								wifiProxyManager = new WifiProxyManager(FileManagerActivity.this);
-							wifiProxyManager.unset();
-						}
-						NetUtil.getIP(FileManagerActivity.this);
-						if(Util.list.size()>20){
-							Util.location = 0;
-							cancel();
-							netTimer.cancel();
-							isTaskRunning = false;
-							setProxy();
-						}
-					}
-				};
-				netTimer.schedule(task,6000,30*1000);
+	private void setProxy(IPBean bean) {
+
+		MLog.d("file","setProxy");
+
+		MLog.e("file","设置当前ip:"+bean.getIp()+"--当前ip location="+location);
+
+		Message msg = Message.obtain();
+		msg.what = 4;
+		msg.obj = bean.getIp();
+		handler.sendMessage(msg);
+
+		if(wifiProxyManager == null)
+			wifiProxyManager = new WifiProxyManager(this);
+		if(Util.getBuild()<=19)
+			wifiProxyManager.setWifiProxySettings(bean.getIp(),bean.getPort());
+		else
+			wifiProxyManager.setWifiProxySettings(bean.getIp(),bean.getPort(),true);
 
 
-			}
+		dbDao.updateLocation(++location);
 
-		}
 	}
 
 	@Override
@@ -295,11 +283,17 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 		case R.id.menu_settings:
 			/*Intent intent = new Intent(this, PreferenceActivity.class);
 			startActivity(intent);*/
-			handler.sendEmptyMessage(2);
+			//下一条
+			handler.sendEmptyMessage(5);
 			return true;
 		
 		case R.id.menu_bookmarks:
 	//		startActivityForResult(new Intent(FileManagerActivity.this, BookmarkListActivity.class), REQUEST_CODE_BOOKMARKS);
+			/*List<IPBean> list = dbDao.query();
+			if(list==null||list.size()==0||location>=list.size()){
+				Toast.makeText(FileManagerActivity.this,"ip list为空或者遍历到list末尾",Toast.LENGTH_SHORT).show();
+				return false;
+			}
 			timer = new Timer();
 			isStop = 0;
 			task = new TimerTask() {
@@ -307,8 +301,8 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 				public void run() {
 					if(isStop == 1 || isStop == 2)
 						return;
-					/*if(SpotManager.getInstance(FileManagerActivity.this).isSpotShowing())
-						handler.sendEmptyMessage(0);*/
+					*//*if(SpotManager.getInstance(FileManagerActivity.this).isSpotShowing())
+						handler.sendEmptyMessage(0);*//*
 					handler.sendEmptyMessage(1);
 					count++;
 					MLog.e("file","count="+count);
@@ -321,15 +315,15 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 				}
 			};
 			timer.schedule(task,15*1000,10*1000);
-			Toast.makeText(this,"启动任务",Toast.LENGTH_SHORT).show();
+			Toast.makeText(this,"启动任务",Toast.LENGTH_SHORT).show();*/
 			return true;
 		case R.id.menu_endtask:
-			timer.cancel();
+			/*timer.cancel();
 			if(task!=null)
 				task.cancel();
 			isStop = 2;
 
-			Toast.makeText(this,"结束任务",Toast.LENGTH_SHORT).show();
+			Toast.makeText(this,"结束任务",Toast.LENGTH_SHORT).show();*/
 			break;
 
 		case android.R.id.home:
@@ -443,16 +437,17 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 				reconnect();
 				break;
 			case 1:
-				Toast.makeText(FileManagerActivity.this,"没有广告，进行切换ip、数据",Toast.LENGTH_SHORT).show();
-				setProxy();
+				Toast.makeText(FileManagerActivity.this,"没有广告，重新请求",Toast.LENGTH_SHORT).show();
+			//	setProxy();
+				reconnect();
 				break;
 			case 2:
 				Toast.makeText(FileManagerActivity.this,"资源加载未完成，20秒后重连",Toast.LENGTH_SHORT).show();
-				reconnect();
+				reShowSpot();
 				break;
 			case 3:
 				Toast.makeText(FileManagerActivity.this,"广告太频繁,20秒后重连，请等待",Toast.LENGTH_SHORT).show();
-				reconnect();
+				reShowSpot();
 				break;
 		}
 	}
@@ -467,14 +462,20 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 
 	}
 
-	private synchronized void reconnect(){
+	private void reconnect(){
+		AdManager.getInstance(FileManagerActivity.this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
+
+		reShowSpot();
+	}
+
+	private synchronized void reShowSpot(){
 		synchronized (handler){
 			handler.postDelayed(new Runnable() {
 				@Override
 				public void run() {
 					if(!SpotManager.getInstance(FileManagerActivity.this).isSpotShowing()) {
 						SpotManager.getInstance(FileManagerActivity.this).showSpot(FileManagerActivity.this, FileManagerActivity.this);
-						MLog.d("file","reconnect");
+						MLog.d("file","reShowSpot");
 					}
 				}
 			},20*1000);
@@ -484,7 +485,18 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 
 	@Override
 	public void onFailure(Call call, IOException e) {
+		MLog.e("file","onFailure");
 		e.printStackTrace();
+	//	handler.sendEmptyMessage(5);
+		if(wifiProxyManager == null)
+			wifiProxyManager = new WifiProxyManager(this);
+		wifiProxyManager.unset();
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				NetUtil.getIP(FileManagerActivity.this);
+			}
+		},60*1000);
 	}
 
 	@Override
@@ -493,26 +505,32 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 		Reader r = response.body().charStream();
 		BufferedReader reader = new BufferedReader(r);
 		String ipAndPort = null;
-		while ((ipAndPort = reader.readLine()) != null) {
-			//                System.out.println("ip and port="+ipAndPort);
-			String[] result = ipAndPort.split(":");
-			IPBean bean = new IPBean();
-			bean.setIp(result[0]);
-			bean.setPort(Integer.parseInt(result[1]));
-			ipBeanList.add(bean);
+		try {
+			while ((ipAndPort = reader.readLine()) != null) {
+                //                System.out.println("ip and port="+ipAndPort);
+                String[] result = ipAndPort.split(":");
+                IPBean bean = new IPBean();
+                bean.setIp(result[0]);
+                bean.setPort(Integer.parseInt(result[1]));
+                ipBeanList.add(bean);
+            }
+
+			//数据库重置
+			dbDao.insertIPInfo(ipBeanList);
+			location = dbDao.queryLocation();
+			if(location == 0)
+				dbDao.insertLocation(1);
+			else
+				dbDao.updateLocation(1);
+			setProxy(ipBeanList.get(0));
+		} catch (Exception e) {
+			e.printStackTrace();
+			NetUtil.getIP(this);
 		}
 
-		Util.list = ipBeanList;
 	}
 
-	class IPRunnable implements Runnable{
 
-		@Override
-		public void run() {
-			NetUtil.getIP(FileManagerActivity.this);
-			Util.location = 0;
-		}
-	}
 
 	class ShowAdReceiver extends BroadcastReceiver{
 		long currMis = 0;
@@ -528,9 +546,8 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 				if (info.getState().equals(NetworkInfo.State.CONNECTED)&&(System.currentTimeMillis()-currMis)>3000) {
 					currMis = System.currentTimeMillis();
-					MLog.d("file","-----wifi connect"+"---"+Util.location);
-					if(!checkLocation())
-						return ;
+					MLog.d("file","-----wifi connect"+"---"+location);
+			//		checkLocation();
 					/*boolean b = NetUtil.ping();
 					if(!b){
 						Toast.makeText(FileManagerActivity.this,"检测代理可以性:不可用  切换下个ip",Toast.LENGTH_SHORT).show();
@@ -554,20 +571,17 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 		}
 	}
 
-	private boolean checkLocation() {
-		if(Util.location >= Util.list.size()-1 && Util.list.size()>0) {//轮到list倒数第二条数据时就重新请求ip
-
-			MLog.e("file","Util.location="+Util.location+"--size="+Util.list.size());
-			Util.threadPool.execute(new IPRunnable());
-			return true;
-		}
-		if(Util.location >= Util.list.size()){
+	private void checkLocation() {
+		int lo = dbDao.queryLocation();
+		IPBean bean = dbDao.queryIP(lo);
+		if(bean == null){
 			MLog.e("file","列表为空或此列表ip已使用完毕");
-			Util.threadPool.execute(new IPRunnable());
 
 			Toast.makeText(this, "列表为空或此列表ip已使用完毕",Toast.LENGTH_SHORT).show();
-			return false;
+			dbDao.deleteIP();
+			NetUtil.getIP(this);
+			return;
 		}
-		return true;
+		setProxy(bean);
 	}
 }

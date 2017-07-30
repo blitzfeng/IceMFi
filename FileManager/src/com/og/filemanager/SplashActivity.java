@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.og.filemanager.db.DBDao;
 import com.og.util.NetUtil;
 import com.og.util.PermissionHelper;
 import com.og.util.Util;
@@ -23,17 +24,27 @@ import java.util.concurrent.Executor;
 public class SplashActivity extends Activity {
 
     private PermissionHelper mPermissionHelper;
+    DBDao dbDao;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        Util.threadPool.execute(new Runnable() {
+        /*Util.threadPool.execute(new Runnable() {
             @Override
             public void run() {
-                Util.list = NetUtil.getIp();
+                dbDao = new DBDao(SplashActivity.this);
+                int lo = dbDao.queryLocation();
+                if(lo == 0){
+                    Util.list = NetUtil.getIp();
+                    if(Util.list.size()>=0){
+                        dbDao.insertIPInfo(Util.list);
+                    }
+                }
+
+
             }
-        });
+        });*/
 
         // 当系统为6.0以上时，需要申请权限
         mPermissionHelper = new PermissionHelper(this);
@@ -63,7 +74,8 @@ public class SplashActivity extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-              startActivity(new Intent(SplashActivity.this,FileManagerActivity.class));
+       //         dbDao.close();
+              startActivity(new Intent(SplashActivity.this,ChooseActivity.class));
                 finish();
             }
         },4000);

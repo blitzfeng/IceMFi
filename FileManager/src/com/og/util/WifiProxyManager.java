@@ -56,19 +56,22 @@ public class WifiProxyManager {
     }
 
     WifiConfiguration GetCurrentWifiConfiguration(WifiManager manager) {
-        if (!manager.isWifiEnabled())
+        if (!manager.isWifiEnabled()) {
+            MLog.e("wifi","manager.isWifiEnabled");
             return null;
+        }
 
         List configurationList = manager.getConfiguredNetworks();
         WifiConfiguration configuration = null;
         int cur = manager.getConnectionInfo().getNetworkId();
+        MLog.e("wifi","cur="+cur);
         for (int i = 0; i <configurationList.size() ;++i)
         {
             WifiConfiguration wifiConfiguration = (WifiConfiguration) configurationList.get(i);
+            MLog.e("wifi","networkId="+wifiConfiguration.networkId);
             if (wifiConfiguration.networkId == cur)
                 configuration = wifiConfiguration;
         }
-
         return configuration;
     }
 
@@ -76,7 +79,7 @@ public class WifiProxyManager {
         //get the current wifi configuration
         WifiManager manager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         WifiConfiguration config = GetCurrentWifiConfiguration(manager);
-        String bssid = config.BSSID;
+ //       String bssid = config.BSSID;
 
         Log.e("input config ", config == null ? "null" : "not null");
         if (null == config)
@@ -282,6 +285,7 @@ public class WifiProxyManager {
             manager.updateNetwork(config);
             manager.disconnect();
             manager.reconnect();
+            MLog.e("wifi","++++++++++++++++");
         } catch (Exception e) {
         }
     }

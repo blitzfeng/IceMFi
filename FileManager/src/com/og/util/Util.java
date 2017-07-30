@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class Util {
     public static List<IPBean> list = new ArrayList<>();
-    public static int location = 0;
+//    public static int location = 0;
     public static ExecutorService threadPool = Executors.newCachedThreadPool();
     public static ScheduledExecutorService timerThread = Executors.newScheduledThreadPool(5);
 

@@ -20,6 +20,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -68,6 +70,7 @@ public class XCheat implements IXposedHookLoadPackage {
     private int location = 0;
     private ClassLoader dynamicClassLoader;
     private long currentMis = 0;
+
 
 
     @Override
@@ -233,7 +236,10 @@ public class XCheat implements IXposedHookLoadPackage {
                             ++location;
                             if(location >= list.size())
                                 location = 0;
-                            Toast.makeText((Activity)param.thisObject,"当前位置："+location,Toast.LENGTH_SHORT).show();
+                            if(param.thisObject instanceof  Fragment)
+                                Toast.makeText(((Fragment)param.thisObject).getActivity(),"当前位置："+location,Toast.LENGTH_SHORT).show();
+                            else if(param.thisObject instanceof Activity)
+                                Toast.makeText(((Activity)param.thisObject),"当前位置："+location,Toast.LENGTH_SHORT).show();
                             XposedBridge.log("当前位置："+location);
                             writeLocation(location);
                         }
@@ -243,7 +249,8 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
-        XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "setProxy", new XC_MethodHook() {
+        Class ipCls = XposedHelpers.findClass("com.og.util.IPBean",lpp.classLoader);
+        XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "setProxy",ipCls, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if((System.currentTimeMillis() - currentMis) > 5000){//限制切换时间频率
@@ -253,12 +260,26 @@ public class XCheat implements IXposedHookLoadPackage {
                         location = 0;
                 //    mContext.getMainLooper();
         //            ((Activity)param.thisObject).getMainLooper();
-       //             Toast.makeText((Activity)param.thisObject,"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
+         //           Toast.makeText(((Activity)param.thisObject),"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
                     XposedBridge.log("setProxy 当前位置："+location);
                     writeLocation(location);
                 }
 
 
+            }
+        });
+        XposedHelpers.findAndHookMethod("com.og.filemanager.ShowActivity", lpp.classLoader, "setProxy", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if((System.currentTimeMillis() - currentMis) > 5000){//限制切换时间频率
+                    currentMis = System.currentTimeMillis();
+                    ++location;
+                    if(location >= list.size())
+                        location = 0;
+
+                    XposedBridge.log("setProxy 当前位置："+location);
+                    writeLocation(location);
+                }
             }
         });
 
