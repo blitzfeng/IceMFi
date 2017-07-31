@@ -1,6 +1,7 @@
 package com.blitz.ice.xadcheat;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,10 +19,17 @@ import com.blitz.ice.xadcheat.db.DBDao;
 import com.blitz.ice.xadcheat.db.DeviceBean;
 import com.blitz.ice.xadcheat.utils.DataUtil;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -150,6 +158,54 @@ public class MainActivity extends AppCompatActivity {
         intent.setComponent(componentName);
         startActivity(intent);
     }
+
+   /* private static boolean a(Context paramContext, InputStream paramInputStream, File paramFile) throws IOException {
+        if (paramInputStream == null) {
+            return false;
+        }
+        GZIPInputStream localGZIPInputStream = null;
+        ByteArrayOutputStream localByteArrayOutputStream = null;
+        byte[] arrayOfByte1 = null;
+        try
+        {
+            localGZIPInputStream = new GZIPInputStream(paramInputStream);
+            localByteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] arrayOfByte2 = new byte['Ѐ'];
+            int i;
+            while ((i = localGZIPInputStream.read(arrayOfByte2, 0, 1024)) != -1) {
+                localByteArrayOutputStream.write(arrayOfByte2, 0, i);
+            }
+            localByteArrayOutputStream.flush();
+            arrayOfByte1 = localByteArrayOutputStream.toByteArray();
+        }
+        catch (Throwable localThrowable1) {}finally
+        {
+            if(localByteArrayOutputStream!=null)
+                localByteArrayOutputStream.close();
+            if(localGZIPInputStream!=null)
+                localGZIPInputStream.close();
+            if(paramInputStream!=null)
+                paramInputStream.close();
+        }
+        if (arrayOfByte1 == null) {
+            return false;
+        }
+        String str = new String(Arrays.copyOfRange(arrayOfByte1, arrayOfByte1.length - 128, arrayOfByte1.length));
+        d.a(paramContext, str);
+        FileOutputStream localFileOutputStream = null;
+        try
+        {
+            int j = arrayOfByte1.length - 128 - d.a(str) % (arrayOfByte1.length - 128);
+            localFileOutputStream = new FileOutputStream(paramFile);
+            localFileOutputStream.write(arrayOfByte1, j, arrayOfByte1.length - 128 - j);
+            localFileOutputStream.write(arrayOfByte1, 0, j);
+            localFileOutputStream.flush();
+            boolean bool = true;
+            return bool;
+        }
+        catch (Throwable localThrowable2) {}
+        return false;
+    }*/
 
 
     @Override

@@ -42,9 +42,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -283,6 +285,56 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
+        XposedHelpers.findAndHookMethod("net.youmi.android.f.d", lpp.classLoader, "a", Context.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                String url = (String) param.args[1];
+                XposedBridge.log("-----url="+url);
+                if(url.contains("http://sdk.static.ymapp.com/core"))
+                    param.args[1] = "";
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+            }
+        });
+
+        XposedHelpers.findAndHookConstructor(URL.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                String ar  = (String) param.args[0];
+                XposedBridge.log("ar="+ar);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.h.f", lpp.classLoader, "a", Context.class, InputStream.class, File.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                File file = (File) param.args[2];
+                file = new File("/data/data/com.og.filemanager/app_libs/ym.jar");
+                XposedBridge.log("file="+file.getAbsolutePath());
+                param.args[2] = file;
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.h.f", lpp.classLoader, "a", File.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                File file = (File) param.args[0];
+                XposedBridge.log("delete file="+file.getAbsolutePath());
+                if(file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.jar")||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.dex")
+                        ||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ym.jar")) {
+                    param.args[0] = null;
+                    param.setResult(true);
+                }
+
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                param.setResult(true);
+            }
+        });
+
 
         setSystemData();
         //劫持指定的方法
@@ -363,12 +415,12 @@ public class XCheat implements IXposedHookLoadPackage {
                         dynamicClassLoader = imageObj.getClass().getClassLoader();
                         if(imageObj instanceof  ImageView){
 
-                          /*  new Handler().postDelayed(new Runnable() {
+                            new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     setSimulateClick((View) imageObj,((ImageView) imageObj).getWidth()/2,((ImageView) imageObj).getHeight()/2);
                                 }
-                            },3000);*/
+                            },3000);
                         }
                     }
                 }

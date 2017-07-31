@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,7 +42,7 @@ public class NetUtil {
                 BufferedReader reader = new BufferedReader(r);
                 String ipAndPort = null;
                 while ((ipAndPort = reader.readLine()) != null) {
-                    //                System.out.println("ip and port="+ipAndPort);
+                                    System.out.println("ip and port="+ipAndPort);
                     String[] result = ipAndPort.split(":");
                     IPBean bean = new IPBean();
                     bean.setIp(result[0]);
@@ -63,7 +64,9 @@ public class NetUtil {
     }
 
     public static void getIP(Callback callback){
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .build();
         String urlStr = "http://dev.kuaidaili.com/api/getproxy/?orderid=970103565976644&num=30&area=%E4%B8%AD%E5%9B%BD&area_ex=%E5%8F%B0%E6%B9%BE&b_pcchrome=1&b_pcie=1&b_pcff=1&b_android=1&protocol=1&method=1&an_an=1&an_ha=1&sp1=1&sp2=1&sep=1";
         final Request request = new Request.Builder().url(urlStr).build();
         Call call = client.newCall(request);

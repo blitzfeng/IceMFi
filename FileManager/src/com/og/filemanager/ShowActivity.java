@@ -150,15 +150,16 @@ public class ShowActivity extends Activity implements Callback{
                 bean.setPort(Integer.parseInt(result[1]));
                 ipBeanList.add(bean);
             }
+            list = ipBeanList;
+            location = 0;
+            handler.sendEmptyMessage(2);
+            setProxy();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
-        list = ipBeanList;
-        location = 0;
-        handler.sendEmptyMessage(2);
-        setProxy();
+
     }
 
     private void checkLocation(){

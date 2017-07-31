@@ -501,13 +501,14 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 
 	@Override
 	public void onResponse(Call call, Response response) throws IOException {
+	//	System.out.println("response="+response.body().string());
 		List<IPBean> ipBeanList = new ArrayList<>();
 		Reader r = response.body().charStream();
 		BufferedReader reader = new BufferedReader(r);
 		String ipAndPort = null;
 		try {
 			while ((ipAndPort = reader.readLine()) != null) {
-                //                System.out.println("ip and port="+ipAndPort);
+                                System.out.println("ip and port="+ipAndPort);
                 String[] result = ipAndPort.split(":");
                 IPBean bean = new IPBean();
                 bean.setIp(result[0]);
@@ -525,7 +526,7 @@ public class FileManagerActivity extends DistributionLibraryFragmentActivity imp
 			setProxy(ipBeanList.get(0));
 		} catch (Exception e) {
 			e.printStackTrace();
-			NetUtil.getIP(this);
+	//		NetUtil.getIP(this);
 		}
 
 	}

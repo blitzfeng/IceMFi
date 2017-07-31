@@ -6,12 +6,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.og.util.NetUtil;
+
 public class ChooseActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose);
+
+      /*  new Thread(){
+            @Override
+            public void run() {
+                NetUtil.getIp();
+            }
+        }.start();*/
     }
 
 
