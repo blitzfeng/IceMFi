@@ -322,7 +322,8 @@ public class XCheat implements IXposedHookLoadPackage {
                 File file = (File) param.args[0];
                 XposedBridge.log("delete file="+file.getAbsolutePath());
                 if(file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.jar")||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.dex")
-                        ||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ym.jar")) {
+                        ||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ym.jar")||
+                        file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/libabcdefgh.so")) {
                     param.args[0] = null;
                     param.setResult(true);
                 }
