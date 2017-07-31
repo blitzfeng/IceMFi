@@ -285,7 +285,7 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
-        XposedHelpers.findAndHookMethod("net.youmi.android.f.d", lpp.classLoader, "a", Context.class, String.class, new XC_MethodHook() {
+       /* XposedHelpers.findAndHookMethod("net.youmi.android.f.d", lpp.classLoader, "a", Context.class, String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String url = (String) param.args[1];
@@ -334,8 +334,7 @@ public class XCheat implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 param.setResult(true);
             }
-        });
-
+        });*/
 
         setSystemData();
         //劫持指定的方法
