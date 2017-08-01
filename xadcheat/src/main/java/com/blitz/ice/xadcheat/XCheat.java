@@ -43,6 +43,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -74,7 +75,6 @@ public class XCheat implements IXposedHookLoadPackage {
     private long currentMis = 0;
 
 
-
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpp) throws Throwable {
 
@@ -95,16 +95,16 @@ public class XCheat implements IXposedHookLoadPackage {
             final Object activityThread = XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", null), "currentActivityThread");
             mContext = (Context) XposedHelpers.callMethod(activityThread, "getSystemContext");
         }
-        if (!lpp.packageName.equals("android")){
+        if (!lpp.packageName.equals("android")) {
 
-            if (android.os.Process.myUid() <= 10000 || lpp.packageName.equals("com.android.launcher")||lpp.packageName.equals("com.htc.launcher")||lpp.packageName.equals("com.android.systemui")) {
+            if (android.os.Process.myUid() <= 10000 || lpp.packageName.equals("com.android.launcher") || lpp.packageName.equals("com.htc.launcher") || lpp.packageName.equals("com.android.systemui")) {
                 //        XposedBridge.log("系统应用"+lpp.packageName+android.os.Process.myUid());
                 return;
             } else {
                 //        XposedBridge.log("普通应用"+lpp.packageName+android.os.Process.myUid());
             }
-    }else {
-            XposedBridge.log("pack:"+lpp.packageName+"--pid="+android.os.Process.myUid());
+        } else {
+            XposedBridge.log("pack:" + lpp.packageName + "--pid=" + android.os.Process.myUid());
            /* Class pmsCls = XposedHelpers.findClass("com.android.server.pm.PackageManagerService",lpp.classLoader);
             XposedBridge.hookAllMethods(pmsCls, "generatePackageInfo", new XC_MethodHook() {
                 @Override
@@ -132,7 +132,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     Intent intent = (Intent) param.args[0];
                     if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
-                        XposedBridge.log("package remo:"+intent.getData());
+                        XposedBridge.log("package remo:" + intent.getData());
                         intent.setAction("");
                         param.args[0] = intent;
                     }
@@ -140,20 +140,20 @@ public class XCheat implements IXposedHookLoadPackage {
             });
         }
 
-        if(Build.VERSION.SDK_INT <= 19)
+        if (Build.VERSION.SDK_INT <= 19)
             XposedHelpers.findAndHookMethod("com.android.server.firewall.IntentFirewall", lpp.classLoader, "checkBroadcast", Intent.class, int.class, int.class, String.class, int.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     Intent intent = (Intent) param.args[0];
                     if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
-                        XposedBridge.log("package remo:"+intent.getData());
+                        XposedBridge.log("package remo:" + intent.getData());
                         intent.setAction("");
                         param.args[0] = intent;
                     }
                 }
             });
 
-   //     XposedBridge.log("package:"+lpp.packageName);
+        //     XposedBridge.log("package:"+lpp.packageName);
         /**5.0系统hook PackageManagerService这类的有问题
          * http://forum.xda-developers.com/xpos...7#post58840569
          * https://github.com/rovo89/Xposed/issues/43
@@ -167,11 +167,11 @@ public class XCheat implements IXposedHookLoadPackage {
                 //        XposedBridge.log("length:"+length);
 
                 Iterator<PackageInfo> iterator = installedPackages.iterator();
-                while (iterator.hasNext()){
+                while (iterator.hasNext()) {
                     PackageInfo info = iterator.next();
-                    if(info.packageName.equals("de.robv.android.xposed.installer")) {
+                    if (info.packageName.equals("de.robv.android.xposed.installer")) {
                         iterator.remove();
-        //                XposedBridge.log("remove:");
+                        //                XposedBridge.log("remove:");
                         break;
                     }
                 }
@@ -182,7 +182,7 @@ public class XCheat implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod(packageManager.getClass(), "getPackageInfo", String.class, int.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if("de.robv.android.xposed.installer".equals(param.args[0])){
+                if ("de.robv.android.xposed.installer".equals(param.args[0])) {
 
                     param.setResult(null);
                 }
@@ -191,7 +191,7 @@ public class XCheat implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod(packageManager.getClass(), "getApplicationInfo", String.class, int.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if("de.robv.android.xposed.installer".equals(param.args[0])){
+                if ("de.robv.android.xposed.installer".equals(param.args[0])) {
                     //           XposedBridge.log("getApplicationInfo");
                     //   ApplicationInfo info = mContext.getPackageManager().getApplicationInfo("com.google.android.syncadapters.contacts",0);
                     //  info.packageName = "com.twinkleapps.easterwallpaperandgame";
@@ -202,21 +202,20 @@ public class XCheat implements IXposedHookLoadPackage {
         });
 
 
-
-        if(!lpp.packageName.equals("com.og.filemanager")) {
+        if (!lpp.packageName.equals("com.og.filemanager")) {
 
             return;
         }
 
 
-        if(list.size()<1)
+        if (list.size() < 1)
             getDeviceInfo();
-        if(location == 0)
+        if (location == 0)
             location = readLocation();
 
-        Class listenerCls = XposedHelpers.findClass("net.youmi.android.nm.sp.SpotListener",lpp.classLoader);
+        Class listenerCls = XposedHelpers.findClass("net.youmi.android.nm.sp.SpotListener", lpp.classLoader);
 
-        XposedHelpers.findAndHookMethod("net.youmi.android.nm.sp.SpotManager", lpp.classLoader, "showSpot", Context.class,listenerCls, new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("net.youmi.android.nm.sp.SpotManager", lpp.classLoader, "showSpot", Context.class, listenerCls, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Class spotListenerCls = param.args[1].getClass();
@@ -229,20 +228,20 @@ public class XCheat implements IXposedHookLoadPackage {
                  * public static final int DEVICE_NOT_SUPPORTED = 5;
                  * public static final int PLAY_TIME_LIMITED = 6;
                  */
-                XposedHelpers.findAndHookMethod(spotListenerCls, "onShowFailed", int.class,new XC_MethodHook() {
+                XposedHelpers.findAndHookMethod(spotListenerCls, "onShowFailed", int.class, new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-    //                    XposedBridge.log("onShowFailed:"+param.args[0]);
-                        if((int)param.args[0]== 1&&(System.currentTimeMillis() - currentMis) > 5000){//NO_AD
+                        //                    XposedBridge.log("onShowFailed:"+param.args[0]);
+                        if ((int) param.args[0] == 1 && (System.currentTimeMillis() - currentMis) > 5000) {//NO_AD
                             currentMis = System.currentTimeMillis();
                             ++location;
-                            if(location >= list.size())
+                            if (location >= list.size())
                                 location = 0;
-                            if(param.thisObject instanceof  Fragment)
-                                Toast.makeText(((Fragment)param.thisObject).getActivity(),"当前位置："+location,Toast.LENGTH_SHORT).show();
-                            else if(param.thisObject instanceof Activity)
-                                Toast.makeText(((Activity)param.thisObject),"当前位置："+location,Toast.LENGTH_SHORT).show();
-                            XposedBridge.log("当前位置："+location);
+                            if (param.thisObject instanceof Fragment)
+                                Toast.makeText(((Fragment) param.thisObject).getActivity(), "当前位置：" + location, Toast.LENGTH_SHORT).show();
+                            else if (param.thisObject instanceof Activity)
+                                Toast.makeText(((Activity) param.thisObject), "当前位置：" + location, Toast.LENGTH_SHORT).show();
+                            XposedBridge.log("当前位置：" + location);
                             writeLocation(location);
                         }
                     }
@@ -251,19 +250,19 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         });
 
-        Class ipCls = XposedHelpers.findClass("com.og.util.IPBean",lpp.classLoader);
-        XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "setProxy",ipCls, new XC_MethodHook() {
+        Class ipCls = XposedHelpers.findClass("com.og.util.IPBean", lpp.classLoader);
+        XposedHelpers.findAndHookMethod("com.og.filemanager.FileManagerActivity", lpp.classLoader, "setProxy", ipCls, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if((System.currentTimeMillis() - currentMis) > 5000){//限制切换时间频率
+                if ((System.currentTimeMillis() - currentMis) > 5000) {//限制切换时间频率
                     currentMis = System.currentTimeMillis();
                     ++location;
-                    if(location >= list.size())
+                    if (location >= list.size())
                         location = 0;
-                //    mContext.getMainLooper();
-        //            ((Activity)param.thisObject).getMainLooper();
-         //           Toast.makeText(((Activity)param.thisObject),"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
-                    XposedBridge.log("setProxy 当前位置："+location);
+                    //    mContext.getMainLooper();
+                    //            ((Activity)param.thisObject).getMainLooper();
+                    //           Toast.makeText(((Activity)param.thisObject),"setProxy 当前位置："+location,Toast.LENGTH_SHORT).show();
+                    XposedBridge.log("setProxy 当前位置：" + location);
                     writeLocation(location);
                 }
 
@@ -273,25 +272,25 @@ public class XCheat implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.og.filemanager.ShowActivity", lpp.classLoader, "setProxy", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if((System.currentTimeMillis() - currentMis) > 5000){//限制切换时间频率
+                if ((System.currentTimeMillis() - currentMis) > 5000) {//限制切换时间频率
                     currentMis = System.currentTimeMillis();
                     ++location;
-                    if(location >= list.size())
+                    if (location >= list.size())
                         location = 0;
 
-                    XposedBridge.log("setProxy 当前位置："+location);
+                    XposedBridge.log("setProxy 当前位置：" + location);
                     writeLocation(location);
                 }
             }
         });
 
-       /* XposedHelpers.findAndHookMethod("net.youmi.android.f.d", lpp.classLoader, "a", Context.class, String.class, new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("net.youmi.android.f.d", lpp.classLoader, "a", Context.class, String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String url = (String) param.args[1];
-                XposedBridge.log("-----url="+url);
-                if(url.contains("http://sdk.static.ymapp.com/core"))
-                    param.args[1] = "";
+                XposedBridge.log("-----url=" + url);
+               /* if(url.contains("http://sdk.static.ymapp.com/core"))
+                    param.args[1] = "";*/
             }
 
             @Override
@@ -299,21 +298,21 @@ public class XCheat implements IXposedHookLoadPackage {
 
             }
         });
-
+/*
         XposedHelpers.findAndHookConstructor(URL.class, String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String ar  = (String) param.args[0];
                 XposedBridge.log("ar="+ar);
             }
-        });
-        XposedHelpers.findAndHookMethod("net.youmi.android.h.f", lpp.classLoader, "a", Context.class, InputStream.class, File.class, new XC_MethodHook() {
+        });*/
+      /*  XposedHelpers.findAndHookMethod("net.youmi.android.h.f", lpp.classLoader, "a", Context.class, InputStream.class, File.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 File file = (File) param.args[2];
                 file = new File("/data/data/com.og.filemanager/app_libs/ym.jar");
                 XposedBridge.log("file="+file.getAbsolutePath());
-                param.args[2] = file;
+        //        param.args[2] = file;
             }
         });
         XposedHelpers.findAndHookMethod("net.youmi.android.h.f", lpp.classLoader, "a", File.class, new XC_MethodHook() {
@@ -321,26 +320,141 @@ public class XCheat implements IXposedHookLoadPackage {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 File file = (File) param.args[0];
                 XposedBridge.log("delete file="+file.getAbsolutePath());
-                if(file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.jar")||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.dex")
+                *//*if(file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.jar")||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ymdex.dex")
                         ||file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/ym.jar")||
                         file.getAbsolutePath().equals("/data/data/com.og.filemanager/app_libs/libabcdefgh.so")) {
                     param.args[0] = null;
                     param.setResult(true);
-                }
+                }*//*
 
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                param.setResult(true);
+     //           param.setResult(true);
+            }
+        });
+
+       XposedHelpers.findAndHookMethod("net.youmi.android.a.a.b", lpp.classLoader, "a", File.class, new XC_MethodHook() {
+
+           @Override
+           protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+               File file = (File) param.args[0];
+               String md5 = (String) param.getResult();
+               XposedBridge.log("md5 file="+file.getAbsolutePath()+"--md5="+md5);
+           }
+       });
+        XposedHelpers.findAndHookMethod("net.youmi.android.a.a.b", lpp.classLoader, "a", File.class,String.class, new XC_MethodHook() {
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                File file = (File) param.args[0];
+                String para = (String) param.args[1];
+                boolean result = (boolean) param.getResult();
+                XposedBridge.log("md5 file="+file.getAbsolutePath()+"---para="+para+"--result="+result);
+        //        param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.a.a.b", lpp.classLoader, "a", String.class, new XC_MethodHook() {
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                String arg = (String) param.args[0];
+                String md5 = (String) param.getResult();
+                XposedBridge.log("md5 arg="+arg+"--md5="+md5);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "a", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                boolean re = (boolean) param.getResult();
+                XposedBridge.log("a.a="+re);
+        //        param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "b", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.b="+param.getResult());
+         //       param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "c", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.c="+param.getResult());
+        //        param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "d", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.d="+param.getResult());
+         //       param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "e", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.e="+param.getResult());
+        //        param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "f", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.f="+param.getResult());
+        //        param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "g", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.g="+param.getResult());
+         //       param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.a", lpp.classLoader, "h", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("a.h="+param.getResult());
+        //        param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.b.b", lpp.classLoader, "a", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("b.a="+param.getResult());
+         //       param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.h.e", lpp.classLoader, "a",int.class,String.class,String.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                String str1 = (String) param.args[1];
+                String str2 = (String) param.args[2];
+                boolean dex = (boolean) param.getResult();
+                XposedBridge.log("Str1="+str1+"--str2="+str2+"--dex="+dex);
+    //            param.setResult(true);
+            }
+        });
+        XposedHelpers.findAndHookMethod("net.youmi.android.h.i", lpp.classLoader, "a",Object.class,String.class,Object.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Object obj = param.args[0];
+                String str1 = (String) param.args[1];
+                Object obj2 =  param.args[2];
+                Object obj1 =  param.getResult();
+                XposedBridge.log("obj="+obj+"Str1="+str1+"--obj2="+obj2+"--obj1="+obj1);
             }
         });*/
+
 
         setSystemData();
         //劫持指定的方法
         //IMEI
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getDeviceId", new Object[]{});
-    //    addHookMethod(lpp.packageName,"android.telephony.TelephonyManager", lpp.classLoader, "getDeviceId",new Object[]{int.class});
+        //    addHookMethod(lpp.packageName,"android.telephony.TelephonyManager", lpp.classLoader, "getDeviceId",new Object[]{int.class});
 
 
         addHookMethod(lpp.packageName, Settings.Secure.class.getName(), lpp.classLoader, "getString", new Object[]{ContentResolver.class.getName(), String.class.getName()});
@@ -349,7 +463,7 @@ public class XCheat implements IXposedHookLoadPackage {
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimSerialNumber", new Object[]{});
 
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSubscriberId", new Object[]{});
-   //
+        //
 
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimOperator", new Object[]{});
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimOperatorName", new Object[]{});
@@ -394,44 +508,39 @@ public class XCheat implements IXposedHookLoadPackage {
         addHookConstructor(lpp.packageName, File.class.getName(), lpp.classLoader, new Object[]{String.class.getName(), String.class.getName()});
         addHookConstructor(lpp.packageName, FileReader.class.getName(), lpp.classLoader, new Object[]{String.class.getName()});
         addHookConstructor(lpp.packageName, FileReader.class.getName(), lpp.classLoader, new Object[]{File.class.getName()});
-        
 
-        if("com.og.filemanager".equals(lpp.packageName)){
+
+        if ("com.og.filemanager".equals(lpp.packageName)) {
             /*XposedHelpers.findAndHookConstructor("java.net.Proxy", lpp.classLoader, Proxy.Type.class, InetSocketAddress.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     param.setResult(null);
                 }
             });*/
-            Class imageCls = XposedHelpers.findClass("android.widget.ImageView",lpp.classLoader);
+
+            Class imageCls = XposedHelpers.findClass("android.widget.ImageView", lpp.classLoader);
             XposedBridge.hookAllConstructors(imageCls, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     final Object imageObj = param.thisObject;
                     String name = imageObj.getClass().getName();
 
-                    if(!name.equals("android.widget.ImageView")&&!name.equals("android.widget.ImageButton")&&!name.contains("com.android.internal.view.menu.ActionMenuPresenter")){//x.y.a.rf
-                        XposedBridge.log("name:"+name);
-                        dynamicClassLoader = imageObj.getClass().getClassLoader();
-                        if(imageObj instanceof  ImageView){
+                    if (!name.equals("android.widget.ImageView") && !name.equals("android.widget.ImageButton") && !name.contains("com.android.internal.view.menu.ActionMenuPresenter")) {//x.y.a.rf
+                        XposedBridge.log("name:" + name);
+
+                        if (imageObj instanceof ImageView) {
 
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    setSimulateClick((View) imageObj,((ImageView) imageObj).getWidth()/2,((ImageView) imageObj).getHeight()/2);
+                                    setSimulateClick((View) imageObj, ((ImageView) imageObj).getWidth() / 2, ((ImageView) imageObj).getHeight() / 2);
                                 }
-                            },3000);
+                            }, 3000);
                         }
                     }
                 }
             });
-            if(dynamicClassLoader!=null)
-                XposedHelpers.findAndHookMethod("x.y.a.yn", dynamicClassLoader, "c", new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        XposedBridge.log("C:"+param.getResult());
-                    }
-                });
+
            /* XposedBridge.hookAllConstructors(Object.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -451,52 +560,53 @@ public class XCheat implements IXposedHookLoadPackage {
 
     private void writeLocation(int location) {
 
-        Cursor cursor = mContext.getContentResolver().query(location_uri,null,null,null,null);
-        if(cursor == null){
-            XposedBridge.log("write insert:"+location);
+        Cursor cursor = mContext.getContentResolver().query(location_uri, null, null, null, null);
+        if (cursor == null) {
+            XposedBridge.log("write insert:" + location);
             ContentValues values = new ContentValues();
-            values.put("location",location);
-            mContext.getContentResolver().insert(location_uri,values);
+            values.put("location", location);
+            mContext.getContentResolver().insert(location_uri, values);
 
-        }else {
-            if(cursor.moveToNext()){
+        } else {
+            if (cursor.moveToNext()) {
                 ContentValues values = new ContentValues();
-                values.put("location",location);
-                int u = mContext.getContentResolver().update(location_uri,values,"id=?",new String[]{"1"});
-                XposedBridge.log("write: u:"+u);
-            }else {
-                XposedBridge.log("Next write insert:"+location);
+                values.put("location", location);
+                int u = mContext.getContentResolver().update(location_uri, values, "id=?", new String[]{"1"});
+                XposedBridge.log("write: u:" + u);
+            } else {
+                XposedBridge.log("Next write insert:" + location);
                 ContentValues values = new ContentValues();
-                values.put("location",location);
-                mContext.getContentResolver().insert(location_uri,values);
+                values.put("location", location);
+                mContext.getContentResolver().insert(location_uri, values);
             }
 
         }
     }
-    private int readLocation(){
+
+    private int readLocation() {
 
         int lo = 0;
-        Cursor cursor = mContext.getContentResolver().query(location_uri,null,null,null,null);
-        if(cursor == null){
-            XposedBridge.log("read insert:"+location);
+        Cursor cursor = mContext.getContentResolver().query(location_uri, null, null, null, null);
+        if (cursor == null) {
+            XposedBridge.log("read insert:" + location);
             ContentValues values = new ContentValues();
-            values.put("location",location);
-            mContext.getContentResolver().insert(location_uri,values);
+            values.put("location", location);
+            mContext.getContentResolver().insert(location_uri, values);
             return 0;
-        }else {
+        } else {
             if (cursor.moveToNext()) {
                 lo = cursor.getInt(cursor.getColumnIndex("location"));
                 Log.e("xposed", "--lo:" + lo);
             }
         }
-         XposedBridge.log("lo:"+lo);
+        XposedBridge.log("lo:" + lo);
         return lo;
     }
 
     private void getDeviceInfo() {
 
-        Cursor cursor = mContext.getContentResolver().query(uri,null,null,null,null,null);
-        if(cursor == null){
+        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null, null);
+        if (cursor == null) {
             XposedBridge.log("cursor is null");
             return;
         }
@@ -505,55 +615,54 @@ public class XCheat implements IXposedHookLoadPackage {
 
     private void setSystemData() {
         DeviceBean bean = list.get(location);
-        if(bean == null) {
+        if (bean == null) {
             XposedBridge.log("bean is null");
             return;
         }
-        if(!TextUtils.isEmpty(bean.getRelease())){
-            XposedHelpers.setStaticObjectField(Build.VERSION.class,"RELEASE",bean.getRelease());
+        if (!TextUtils.isEmpty(bean.getRelease())) {
+            XposedHelpers.setStaticObjectField(Build.VERSION.class, "RELEASE", bean.getRelease());
         }
-        if(!TextUtils.isEmpty(bean.getSdk())){
+        if (!TextUtils.isEmpty(bean.getSdk())) {
             XposedHelpers.setStaticObjectField(Build.VERSION.class, "SDK", bean.getSdk());
         }
 
-        if(!TextUtils.isEmpty(bean.getBrand())){
-            XposedHelpers.setStaticObjectField(Build.class, "BRAND",bean.getBrand());
+        if (!TextUtils.isEmpty(bean.getBrand())) {
+            XposedHelpers.setStaticObjectField(Build.class, "BRAND", bean.getBrand());
         }
-        if(!TextUtils.isEmpty(bean.getModel())){
-            XposedHelpers.setStaticObjectField(Build.class, "MODEL",bean.getModel());
+        if (!TextUtils.isEmpty(bean.getModel())) {
+            XposedHelpers.setStaticObjectField(Build.class, "MODEL", bean.getModel());
         }
-        if(!TextUtils.isEmpty(bean.getProduct())){
+        if (!TextUtils.isEmpty(bean.getProduct())) {
             XposedHelpers.setStaticObjectField(Build.class, "PRODUCT", bean.getProduct());
         }
-        if(!TextUtils.isEmpty(bean.getManufacturer())){
+        if (!TextUtils.isEmpty(bean.getManufacturer())) {
             XposedHelpers.setStaticObjectField(Build.class, "MANUFACTURER", bean.getManufacturer());
         }
-        if(!TextUtils.isEmpty(bean.getHardware())){
-            XposedHelpers.setStaticObjectField(Build.class, "HARDWARE",bean.getHardware());
+        if (!TextUtils.isEmpty(bean.getHardware())) {
+            XposedHelpers.setStaticObjectField(Build.class, "HARDWARE", bean.getHardware());
         }
-        if(!TextUtils.isEmpty(bean.getFingerPrint())){
+        if (!TextUtils.isEmpty(bean.getFingerPrint())) {
             XposedHelpers.setStaticObjectField(Build.class, "FINGERPRINT", bean.getFingerPrint());
         }
-        if(!TextUtils.isEmpty(bean.getSerial())){
+        if (!TextUtils.isEmpty(bean.getSerial())) {
             XposedHelpers.setStaticObjectField(Build.class, "SERIAL", bean.getSerial());
         }
 
     }
 
     //劫持指定方法
-    public void addHookMethod(final String packageName, final String className, ClassLoader classLoader, final String methodName, Object[] parameterTypesAndCallback){
+    public void addHookMethod(final String packageName, final String className, ClassLoader classLoader, final String methodName, Object[] parameterTypesAndCallback) {
 
         XC_MethodHook xc_methodHook = new XC_MethodHook() {
             //方法调用前劫持，将参数替换成指定参数，实现屏蔽指定的包名
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if("getPackageInfo".equals(methodName) ){
-                    if(param.args[0].equals(XposeUtil.pkg1)  ){
+                if ("getPackageInfo".equals(methodName)) {
+                    if (param.args[0].equals(XposeUtil.pkg1)) {
                         param.args[0] = "com.tencent.mm";
                     }
-                }else
-                if("getApplicationInfo".equals(methodName) ){
-                    if(param.args[0].equals(XposeUtil.pkg1)  ){
+                } else if ("getApplicationInfo".equals(methodName)) {
+                    if (param.args[0].equals(XposeUtil.pkg1)) {
                         param.args[0] = "com.tencent.mm";
                     }
                 }
@@ -561,99 +670,98 @@ public class XCheat implements IXposedHookLoadPackage {
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (list.size()<1){
+                if (list.size() < 1) {
                     XposedBridge.log("list.size()<1");
                     return;
                 }
                 DeviceBean bean = list.get(location);
 
 //                        L.log("android.os.SystemProperties获取序列号");
-                if("get".equals(methodName) && className.equals("android.os.SystemProperties")){
-                    if(param.args[0].equals("ro.serialno")){
+                if ("get".equals(methodName) && className.equals("android.os.SystemProperties")) {
+                    if (param.args[0].equals("ro.serialno")) {
                         String serial = bean.getSerial();
-                        if(!TextUtils.isEmpty(serial)){
+                        if (!TextUtils.isEmpty(serial)) {
                             param.setResult(serial);
                         }
                     }
-                }else if("getInstalledApplications".equals(methodName) ){//屏蔽自己的包名
-                        List<ApplicationInfo> installedApplications = (List<ApplicationInfo>) param.getResult();
-                        for (int i = installedApplications.size() - 1; i >= 0 ; i--) {
-                            ApplicationInfo applicationInfo = installedApplications.get(i);
-                            if(applicationInfo.equals(XposeUtil.pkg1)){
-                                installedApplications.remove(i);
-                            }
+                } else if ("getInstalledApplications".equals(methodName)) {//屏蔽自己的包名
+                    List<ApplicationInfo> installedApplications = (List<ApplicationInfo>) param.getResult();
+                    for (int i = installedApplications.size() - 1; i >= 0; i--) {
+                        ApplicationInfo applicationInfo = installedApplications.get(i);
+                        if (applicationInfo.equals(XposeUtil.pkg1)) {
+                            installedApplications.remove(i);
                         }
-                        param.setResult(installedApplications);
-                }else if("getRunningAppProcesses".equals(methodName) ){////屏蔽自己
-                        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = (List<ActivityManager.RunningAppProcessInfo>) param.getResult();
-                        for (int i = runningAppProcesses.size() - 1; i >= 0; i--) {
-                            ActivityManager.RunningAppProcessInfo runningAppProcessInfo = runningAppProcesses.get(i);
-                            if(runningAppProcessInfo.processName.equals(XposeUtil.pkg1)){
+                    }
+                    param.setResult(installedApplications);
+                } else if ("getRunningAppProcesses".equals(methodName)) {////屏蔽自己
+                    List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = (List<ActivityManager.RunningAppProcessInfo>) param.getResult();
+                    for (int i = runningAppProcesses.size() - 1; i >= 0; i--) {
+                        ActivityManager.RunningAppProcessInfo runningAppProcessInfo = runningAppProcesses.get(i);
+                        if (runningAppProcessInfo.processName.equals(XposeUtil.pkg1)) {
 
-                                runningAppProcesses.remove(i);
-                            }
+                            runningAppProcesses.remove(i);
                         }
-                        param.setResult(runningAppProcesses);
-                }else if("getInstalledPackages".equals(methodName) ){//屏蔽自己
-                        List<PackageInfo> installedPackages = (List<PackageInfo>) param.getResult();
-                        for (int i = installedPackages.size() - 1; i >= 0; i--) {
-                            String s = installedPackages.get(i).packageName;
-                            if(s.equals(XposeUtil.pkg1)){
-                                XposedBridge.log("getInstalledPackages+移除"+s);
-                                installedPackages.remove(i);
-                            }
+                    }
+                    param.setResult(runningAppProcesses);
+                } else if ("getInstalledPackages".equals(methodName)) {//屏蔽自己
+                    List<PackageInfo> installedPackages = (List<PackageInfo>) param.getResult();
+                    for (int i = installedPackages.size() - 1; i >= 0; i--) {
+                        String s = installedPackages.get(i).packageName;
+                        if (s.equals(XposeUtil.pkg1)) {
+                            XposedBridge.log("getInstalledPackages+移除" + s);
+                            installedPackages.remove(i);
                         }
-                        param.setResult(installedPackages);
-                }else if("getAddress".equals(methodName)){//蓝牙地址
-                        String m_bluetoothaddress = bean.getMac();
-                        if(!TextUtils.isEmpty(m_bluetoothaddress)){
-                            param.setResult(m_bluetoothaddress);
-                        }
-                }else if("getRadioVersion".equals(methodName)){//固件版本
+                    }
+                    param.setResult(installedPackages);
+                } else if ("getAddress".equals(methodName)) {//蓝牙地址
+                    String m_bluetoothaddress = bean.getMac();
+                    if (!TextUtils.isEmpty(m_bluetoothaddress)) {
+                        param.setResult(m_bluetoothaddress);
+                    }
+                } else if ("getRadioVersion".equals(methodName)) {//固件版本
                     XposedBridge.log("getRadioVersion");
-                }else if("getBSSID".equals(methodName)){//无线路由地址
-                        String m_BSSID = bean.getBssid();
-                        if(!TextUtils.isEmpty(m_BSSID)){
-                            MLog.d("Xposed","修改m_BSSID");
-                            param.setResult(m_BSSID);
-                        }else{
-                            XposedBridge.log("获取m_BSSID为空");
-                        }
-                }else if("getSSID".equals(methodName)){//无线路由名
-                        String m_SSID = bean.getSsid();
-                        if(!TextUtils.isEmpty(m_SSID)){
-                            MLog.d("Xposed","修改m_SSID");
-                            param.setResult(m_SSID);
-                        }else{
-                            XposedBridge.log("获取m_SSID为空");
-                        }
-                }else if("getMacAddress".equals(methodName)){//mac地址
-                        String m_macAddress = bean.getMac();
-                        if(!TextUtils.isEmpty(m_macAddress)){
-                            MLog.d("Xposed","修改m_macAddress");
-                            param.setResult(m_macAddress);
-                        }else{
-                            XposedBridge.log("获取m_macAddress为空");
-                        }
-                }else
-                    if("getSimState".equals(methodName)){//手机卡状态
-                        XposedBridge.log("getSimState");
+                } else if ("getBSSID".equals(methodName)) {//无线路由地址
+                    String m_BSSID = bean.getBssid();
+                    if (!TextUtils.isEmpty(m_BSSID)) {
+                        MLog.d("Xposed", "修改m_BSSID");
+                        param.setResult(m_BSSID);
+                    } else {
+                        XposedBridge.log("获取m_BSSID为空");
+                    }
+                } else if ("getSSID".equals(methodName)) {//无线路由名
+                    String m_SSID = bean.getSsid();
+                    if (!TextUtils.isEmpty(m_SSID)) {
+                        MLog.d("Xposed", "修改m_SSID");
+                        param.setResult(m_SSID);
+                    } else {
+                        XposedBridge.log("获取m_SSID为空");
+                    }
+                } else if ("getMacAddress".equals(methodName)) {//mac地址
+                    String m_macAddress = bean.getMac();
+                    if (!TextUtils.isEmpty(m_macAddress)) {
+                        MLog.d("Xposed", "修改m_macAddress");
+                        param.setResult(m_macAddress);
+                    } else {
+                        XposedBridge.log("获取m_macAddress为空");
+                    }
+                } else if ("getSimState".equals(methodName)) {//手机卡状态
+                    XposedBridge.log("getSimState");
                         /*int m_simState = XposeUtil.configMap.optInt(XposeUtil.m_simState, -1);
                         if(m_simState != -1)
                             param.setResult(5);*/
 
-                }else if("getPhoneType".equals(methodName)){//手机类型
-                        int m_phoneType = Integer.parseInt(bean.getPhoneType());
-                        if(m_phoneType != -1)
-                            param.setResult(m_phoneType);
+                } else if ("getPhoneType".equals(methodName)) {//手机类型
+                    int m_phoneType = Integer.parseInt(bean.getPhoneType());
+                    if (m_phoneType != -1)
+                        param.setResult(m_phoneType);
 
-                }else if("getNetworkType".equals(methodName)){//网络类型
-                        int m_networkType = Integer.parseInt(bean.getNetworkType());
-                        if(m_networkType != -1)
-                            param.setResult(m_networkType);
+                } else if ("getNetworkType".equals(methodName)) {//网络类型
+                    int m_networkType = Integer.parseInt(bean.getNetworkType());
+                    if (m_networkType != -1)
+                        param.setResult(m_networkType);
 
-                }else if("getNetworkOperatorName".equals(methodName)){//网络类型名
-                        XposedBridge.log("getNetworkOperatorName");
+                } else if ("getNetworkOperatorName".equals(methodName)) {//网络类型名
+                    XposedBridge.log("getNetworkOperatorName");
                         /*String networkOperatorName = XposeUtil.configMap.optString(XposeUtil.m_networkOperatorName);
                         if(!TextUtils.isEmpty(networkOperatorName)){
                             XposedBridge.log("修改networkOperatorName");
@@ -661,41 +769,41 @@ public class XCheat implements IXposedHookLoadPackage {
                         }else{
                             XposedBridge.log("获取networkOperatorName为空");
                         }*/
-                }else if("getSimOperator".equals(methodName)){//运营商
-                        String simOperator = bean.getSimOperator();
-                        if(!TextUtils.isEmpty(simOperator)){
-                            XposedBridge.log("修改simOperatord");
-                            param.setResult(simOperator);
-                        }else{
-                            XposedBridge.log("获取simOperator为空");
-                        }
-                }else if("getSimOperatorName".equals(methodName)){
-                        String simOperatorName = bean.getSimOperatorName();
-                        if(!TextUtils.isEmpty(simOperatorName)){
-                            XposedBridge.log("修改simOperatord");
-                            param.setResult(simOperatorName);
-                        }else{
-                            XposedBridge.log("获取simOperator为空");
-                        }
-                }else if("getSubscriberId".equals(methodName)||"getSubscriberIdGemini".equals(methodName)){//IMSI
+                } else if ("getSimOperator".equals(methodName)) {//运营商
+                    String simOperator = bean.getSimOperator();
+                    if (!TextUtils.isEmpty(simOperator)) {
+                        XposedBridge.log("修改simOperatord");
+                        param.setResult(simOperator);
+                    } else {
+                        XposedBridge.log("获取simOperator为空");
+                    }
+                } else if ("getSimOperatorName".equals(methodName)) {
+                    String simOperatorName = bean.getSimOperatorName();
+                    if (!TextUtils.isEmpty(simOperatorName)) {
+                        XposedBridge.log("修改simOperatord");
+                        param.setResult(simOperatorName);
+                    } else {
+                        XposedBridge.log("获取simOperator为空");
+                    }
+                } else if ("getSubscriberId".equals(methodName) || "getSubscriberIdGemini".equals(methodName)) {//IMSI
                     String subscriberId = bean.getImsi();
-                    if(!TextUtils.isEmpty(subscriberId)){
-                        MLog.d("Xposed","修改subscriberId");
+                    if (!TextUtils.isEmpty(subscriberId)) {
+                        MLog.d("Xposed", "修改subscriberId");
                         param.setResult(subscriberId);
-                    }else{
+                    } else {
                         XposedBridge.log("获取subscriberId为空");
                     }
-                }else if("getSimSerialNumber".equals(methodName)){//手机卡序列号
-             //           XposedBridge.log("getSimSerialNumber");
-                        String simSerialNumber = bean.getSimSerialNumber();
-                        if(!TextUtils.isEmpty(simSerialNumber)){
-                            MLog.d("Xposed","修改simSerialNumber");
-                            param.setResult(simSerialNumber);
-                        }else{
-                            XposedBridge.log("获取simSerialNumber为空");
-                        }
-                }else if("getLine1Number".equals(methodName)){//电话号码
-                        XposedBridge.log("getLine1Number");
+                } else if ("getSimSerialNumber".equals(methodName)) {//手机卡序列号
+                    //           XposedBridge.log("getSimSerialNumber");
+                    String simSerialNumber = bean.getSimSerialNumber();
+                    if (!TextUtils.isEmpty(simSerialNumber)) {
+                        MLog.d("Xposed", "修改simSerialNumber");
+                        param.setResult(simSerialNumber);
+                    } else {
+                        XposedBridge.log("获取simSerialNumber为空");
+                    }
+                } else if ("getLine1Number".equals(methodName)) {//电话号码
+                    XposedBridge.log("getLine1Number");
                        /* String phoneNum = XposeUtil.configMap.optString(XposeUtil.m_phoneNum);
                         if(!TextUtils.isEmpty(phoneNum)){
                             L.debug("修改phoneNum");
@@ -703,43 +811,43 @@ public class XCheat implements IXposedHookLoadPackage {
                         }else{
                             L.debug("获取phoneNum为空");
                         }*/
-                }else if("getString".equals(methodName) && param.args[1].equals("android_id")){//android_id
-                        String androidId = bean.getAndroidId();
-                        if(!TextUtils.isEmpty(androidId)){
-                            XposedBridge.log("修改androidId");
-                            param.setResult(androidId);
-                        }else{
-                            XposedBridge.log("获取androidId为空");
-                        }
-                }else if("getDeviceId".equals(methodName)){//device_id
+                } else if ("getString".equals(methodName) && param.args[1].equals("android_id")) {//android_id
+                    String androidId = bean.getAndroidId();
+                    if (!TextUtils.isEmpty(androidId)) {
+                        XposedBridge.log("修改androidId");
+                        param.setResult(androidId);
+                    } else {
+                        XposedBridge.log("获取androidId为空");
+                    }
+                } else if ("getDeviceId".equals(methodName)) {//device_id
 
-                        String deviceid = bean.getImei();
-                        MLog.d("Xposed","imei="+deviceid);
-                        if(!TextUtils.isEmpty(deviceid)){
-                 //           XposedBridge.log("修改deviceid");
-                            param.setResult(deviceid);
-                        }else{
-                            XposedBridge.log("获取deviceid为空");
+                    String deviceid = bean.getImei();
+                    MLog.d("Xposed", "imei=" + deviceid);
+                    if (!TextUtils.isEmpty(deviceid)) {
+                        //           XposedBridge.log("修改deviceid");
+                        param.setResult(deviceid);
+                    } else {
+                        XposedBridge.log("获取deviceid为空");
 
-                        }
+                    }
                 }
 
             }
         };
         //执行hook方法findAndHookMethod的param值为参数+回调的可变参数，故要将回调加入进去
-        Object [] param = new Object[parameterTypesAndCallback.length + 1];
+        Object[] param = new Object[parameterTypesAndCallback.length + 1];
         for (int i = 0; i < param.length; i++) {
-            if(i == param.length-1){
+            if (i == param.length - 1) {
                 param[param.length - 1] = xc_methodHook;
                 XposedHelpers.findAndHookMethod(className, classLoader, methodName, param);
-                return ;
+                return;
             }
             param[i] = parameterTypesAndCallback[i];
         }
     }
 
     //劫持构造方法
-    public void addHookConstructor(final String packageName,String className,ClassLoader classLoader,Object[] parameterTypesAndCallback){
+    public void addHookConstructor(final String packageName, String className, ClassLoader classLoader, Object[] parameterTypesAndCallback) {
 
         XC_MethodHook xc_methodHook = new XC_MethodHook() {
             @Override
@@ -767,28 +875,33 @@ public class XCheat implements IXposedHookLoadPackage {
         };
 
         //执行hook方法findAndHookConstructor的param值为参数+回调的可变参数，故要将回调加入进去
-        Object [] param = new Object[parameterTypesAndCallback.length + 1];
+        Object[] param = new Object[parameterTypesAndCallback.length + 1];
         for (int i = 0; i < param.length; i++) {
-            if(i == param.length-1){
+            if (i == param.length - 1) {
                 param[param.length - 1] = xc_methodHook;
-                XposedHelpers.findAndHookConstructor(className,classLoader,param);
-                return ;
+                XposedHelpers.findAndHookConstructor(className, classLoader, param);
+                return;
             }
             param[i] = parameterTypesAndCallback[i];
         }
     }
 
     private void setSimulateClick(View view, float x, float y) {
-        XposedBridge.log("x:"+x+"--y:"+y);
+        XposedBridge.log("x:" + x + "--y:" + y);
         long downTime = SystemClock.uptimeMillis();
-        final MotionEvent downEvent = MotionEvent.obtain(downTime, downTime+100,
+        final MotionEvent downEvent = MotionEvent.obtain(downTime, downTime + 100,
                 MotionEvent.ACTION_DOWN, x, y, 0);
         downTime += 2000;
-        final MotionEvent upEvent = MotionEvent.obtain(downTime, downTime+100,
+        final MotionEvent upEvent = MotionEvent.obtain(downTime, downTime + 100,
                 MotionEvent.ACTION_UP, x, y, 0);
         view.onTouchEvent(downEvent);
         view.onTouchEvent(upEvent);
+        view.dispatchTouchEvent(downEvent);
+        view.dispatchTouchEvent(upEvent);
         downEvent.recycle();
         upEvent.recycle();
+
+        boolean b = view.performClick();
+        XposedBridge.log("b=" + b);
     }
 }

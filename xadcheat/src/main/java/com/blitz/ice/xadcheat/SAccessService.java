@@ -38,6 +38,17 @@ public class SAccessService extends AccessibilityService {
                 AccessibilityNodeInfo okInfo = okList.get(0);
                 if(okInfo.isClickable())
                     okInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+
+                List<AccessibilityNodeInfo> notInstallList = nodeInfo.findAccessibilityNodeInfosByText("应用未安装");
+                if(notInstallList!=null&&notInstallList.size()>0){
+                    List<AccessibilityNodeInfo> doneList = nodeInfo.findAccessibilityNodeInfosByText("完成");
+                    if(doneList == null|| doneList.size() ==0){
+                        MLog.e("Access","未找到 完成");
+                        return;
+                    }
+                    AccessibilityNodeInfo doneInfo = doneList.get(0);
+                    doneInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                }
                 break;
             case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
                 System.out.println("WINDOW_CONTENT_CHANGED");
@@ -49,6 +60,16 @@ public class SAccessService extends AccessibilityService {
                 AccessibilityNodeInfo ok2Info = ok2List.get(0);
                 if(ok2Info.isClickable())
                     ok2Info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                List<AccessibilityNodeInfo> notInstallList2 = nodeInfo.findAccessibilityNodeInfosByText("应用未安装");
+                if(notInstallList2!=null&&notInstallList2.size()>0){
+                    List<AccessibilityNodeInfo> doneList = nodeInfo.findAccessibilityNodeInfosByText("完成");
+                    if(doneList == null|| doneList.size() ==0){
+                        MLog.e("Access","未找到 完成");
+                        return;
+                    }
+                    AccessibilityNodeInfo doneInfo = doneList.get(0);
+                    doneInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                }
                 break;
         }
     }
