@@ -530,12 +530,12 @@ public class XCheat implements IXposedHookLoadPackage {
 
                         if (imageObj instanceof ImageView) {
 
-                            new Handler().postDelayed(new Runnable() {
+                            /*new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     setSimulateClick((View) imageObj, ((ImageView) imageObj).getWidth() / 2, ((ImageView) imageObj).getHeight() / 2);
                                 }
-                            }, 3000);
+                            }, 3000);*/
                         }
                     }
                 }
