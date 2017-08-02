@@ -21,6 +21,10 @@ import com.og.util.NetUtil;
 import com.og.util.Util;
 import com.og.util.WifiProxyManager;
 
+import net.youmi.android.AdManager;
+import net.youmi.android.nm.sp.SpotListener;
+import net.youmi.android.nm.sp.SpotManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -50,7 +54,30 @@ public class ShowActivity extends Activity implements Callback{
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
-                    ShowActivity.this.startActivity(new Intent(ShowActivity.this,TestActivity.class));
+            //        ShowActivity.this.startActivity(new Intent(ShowActivity.this,TestActivity.class));
+                    if(!SpotManager.getInstance(ShowActivity.this).isSpotShowing())
+                        SpotManager.getInstance(ShowActivity.this).showSpot(ShowActivity.this, new SpotListener() {
+                            @Override
+                            public void onShowSuccess() {
+
+                            }
+
+                            @Override
+                            public void onShowFailed(int i) {
+
+                            }
+
+                            @Override
+                            public void onSpotClosed() {
+
+                            }
+
+                            @Override
+                            public void onSpotClicked(boolean b) {
+                                if(b)
+                                    isStop = 1;
+                            }
+                        });
                     break;
                 case 1:
                     MLog.e("file","准备切换代理");
@@ -154,6 +181,15 @@ public class ShowActivity extends Activity implements Callback{
             location = 0;
             handler.sendEmptyMessage(2);
             setProxy();
+        } catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
+            wifiProxyManager.unset();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    NetUtil.getIP(ShowActivity.this);
+                }
+            },10000);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NumberFormatException e) {
@@ -195,6 +231,11 @@ public class ShowActivity extends Activity implements Callback{
         ++location;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isStop = 0;
+    }
 
     @Override
     protected void onPause() {
@@ -219,7 +260,13 @@ public class ShowActivity extends Activity implements Callback{
                     currMis = System.currentTimeMillis();
                     MLog.d("file", "-----wifi connect" + "---" + location);
 
-                    isStop = 0;
+                    AdManager.getInstance(ShowActivity.this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            isStop = 0;
+                        }
+                    },10000);
 
                 }
             }

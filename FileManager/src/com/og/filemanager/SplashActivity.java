@@ -51,16 +51,16 @@ public class SplashActivity extends Activity {
         mPermissionHelper.setOnApplyPermissionListener(new PermissionHelper.OnApplyPermissionListener() {
             @Override
             public void onAfterApplyAllPermission() {
-                AdManager.getInstance(SplashActivity.this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
+    //            AdManager.getInstance(SplashActivity.this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
             }
         });
         if (Build.VERSION.SDK_INT < 23) {
             // 如果系统版本低于23，直接跑应用的逻辑
-            AdManager.getInstance(this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
+    //        AdManager.getInstance(this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
         } else {
             // 如果权限全部申请了，那就直接跑应用逻辑
             if (mPermissionHelper.isAllRequestedPermissionGranted()) {
-                AdManager.getInstance(this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
+     //           AdManager.getInstance(this).init("1204a74cefdec234", "c04e0d119fa30fdb", true);
             } else {
                 // 如果还有权限为申请，而且系统版本大于23，执行申请权限逻辑
                 mPermissionHelper.applyPermissions();
@@ -75,7 +75,7 @@ public class SplashActivity extends Activity {
             @Override
             public void run() {
        //         dbDao.close();
-              startActivity(new Intent(SplashActivity.this,ChooseActivity.class));
+              startActivity(new Intent(SplashActivity.this,ShowActivity.class));
                 finish();
             }
         },4000);

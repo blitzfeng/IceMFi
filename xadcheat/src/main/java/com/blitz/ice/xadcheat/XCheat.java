@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -65,7 +66,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class XCheat implements IXposedHookLoadPackage {
 
-
+    private int showCount = 0;
+    private int clickLocation = 10;
+    private int[] clickLocationArray = {10,11,12,13,14};
     private Context mContext;
     private List<DeviceBean> list = new ArrayList<>();
     private Uri uri = Uri.parse("content://com.blitz.ice.xadcheat.utils.DeviceInfoProvider/device");
@@ -526,33 +529,23 @@ public class XCheat implements IXposedHookLoadPackage {
                     String name = imageObj.getClass().getName();
 
                     if (!name.equals("android.widget.ImageView") && !name.equals("android.widget.ImageButton") && !name.contains("com.android.internal.view.menu.ActionMenuPresenter")) {//x.y.a.rf
-                        XposedBridge.log("name:" + name);
+                        XposedBridge.log("name:" + name+"---showCount="+(++showCount));
 
-                        if (imageObj instanceof ImageView) {
-
-                            /*new Handler().postDelayed(new Runnable() {
+                        if (imageObj instanceof ImageView && showCount > clickLocation) {
+                            showCount = 0;
+                            clickLocation = clickLocationArray[new Random().nextInt(5)];
+                            XposedBridge.log("clickLocation="+clickLocation);
+                            new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     setSimulateClick((View) imageObj, ((ImageView) imageObj).getWidth() / 2, ((ImageView) imageObj).getHeight() / 2);
                                 }
-                            }, 3000);*/
+                            }, 3000);
                         }
                     }
                 }
             });
 
-           /* XposedBridge.hookAllConstructors(Object.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    final Object imageObj = param.thisObject;
-                    String name = imageObj.getClass().getName();
-                    System.out.println(imageObj.getClass().getName());
-                    if(name.equals("x.y.a.yn")){
-                        XposedBridge.log("x.y.a.yn");
-
-                    }
-                }
-            });*/
         }
 
 
@@ -814,7 +807,7 @@ public class XCheat implements IXposedHookLoadPackage {
                 } else if ("getString".equals(methodName) && param.args[1].equals("android_id")) {//android_id
                     String androidId = bean.getAndroidId();
                     if (!TextUtils.isEmpty(androidId)) {
-                        XposedBridge.log("修改androidId");
+            //            XposedBridge.log("修改androidId");
                         param.setResult(androidId);
                     } else {
                         XposedBridge.log("获取androidId为空");
@@ -902,6 +895,6 @@ public class XCheat implements IXposedHookLoadPackage {
         upEvent.recycle();
 
         boolean b = view.performClick();
-        XposedBridge.log("b=" + b);
+    //    XposedBridge.log("b=" + b);
     }
 }

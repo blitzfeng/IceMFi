@@ -65,12 +65,12 @@ public class XBlitzReceiver extends BroadcastReceiver {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
 
-                        new Handler().postDelayed(new Runnable() {
+                       /* new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 context.sendBroadcast(new Intent(XBlitzReceiver.PACKAGE_REMOVE_ACTION));
                             }
-                        },50*1000);
+                        },50*1000);*/
                     } catch (NoSuchMethodException e) {
                         e.printStackTrace();
                     } catch (InvocationTargetException e) {
