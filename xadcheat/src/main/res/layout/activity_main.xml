@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:orientation="vertical"
-    android:layout_height="match_parent" tools:context="com.blitz.ice.xadcheat.MainActivity">
+    android:layout_height="match_parent" tools:context="com.blitz.ice.xad.MainActivity">
 
     <View
         android:layout_width="match_parent"

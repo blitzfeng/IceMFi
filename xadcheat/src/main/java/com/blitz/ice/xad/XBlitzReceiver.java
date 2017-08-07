@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat;
+package com.blitz.ice.xad;
 
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.PackageManager;
 import android.os.Handler;
-import android.os.Process;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

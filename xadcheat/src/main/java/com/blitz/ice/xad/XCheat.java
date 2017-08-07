@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat;
+package com.blitz.ice.xad;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -14,44 +14,33 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.blitz.ice.xadcheat.db.DBDao;
-import com.blitz.ice.xadcheat.db.DeviceBean;
-import com.blitz.ice.xadcheat.utils.DisplayUtil;
-import com.blitz.ice.xadcheat.utils.XposeUtil;
+import com.blitz.ice.xad.db.DBDao;
+import com.blitz.ice.xad.db.DeviceBean;
+import com.blitz.ice.xad.utils.DataUtil;
+import com.blitz.ice.xad.utils.XposeUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -74,8 +63,8 @@ public class XCheat implements IXposedHookLoadPackage {
     private Uri uri = Uri.parse("content://com.blitz.ice.xadcheat.utils.DeviceInfoProvider/device");
     private Uri location_uri = Uri.parse("content://com.blitz.ice.xadcheat.utils.DeviceInfoProvider/location");
     private int location = 0;
-    private ClassLoader dynamicClassLoader;
     private long currentMis = 0;
+    private List<String> shieldPackage = Arrays.asList("eu.chainfire.supersu","de.robv.android.xposed.installer","com.blitz.ice.");
 
 
     @Override
@@ -108,27 +97,7 @@ public class XCheat implements IXposedHookLoadPackage {
             }
         } else {
             XposedBridge.log("pack:" + lpp.packageName + "--pid=" + android.os.Process.myUid());
-           /* Class pmsCls = XposedHelpers.findClass("com.android.server.pm.PackageManagerService",lpp.classLoader);
-            XposedBridge.hookAllMethods(pmsCls, "generatePackageInfo", new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    PackageInfo info = (PackageInfo) param.getResult();
-                    if(info.packageName.equals("de.robv.android.xposed.installer")){
-                        XposedBridge.log("generatePackageInfo");
-                        param.setResult(null);
-                    }
-                }
-            });
-            XposedHelpers.findAndHookMethod(pmsCls, "generatePackageInfoFromSettingsLPw",String.class,int.class,int.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    PackageInfo info = (PackageInfo) param.getResult();
-                    if(info.packageName.equals("de.robv.android.xposed.installer")){
-                        XposedBridge.log("generatePackageInfoFromSettingsLPw");
-                        param.setResult(null);
-                    }
-                }
-            });*/
+
             //拦截广播
             XposedHelpers.findAndHookMethod("com.android.server.firewall.IntentFirewall", lpp.classLoader, "checkBroadcast", Intent.class, int.class, int.class, String.class, int.class, new XC_MethodHook() {
                 @Override
@@ -172,20 +141,20 @@ public class XCheat implements IXposedHookLoadPackage {
                 Iterator<PackageInfo> iterator = installedPackages.iterator();
                 while (iterator.hasNext()) {
                     PackageInfo info = iterator.next();
-                    if (info.packageName.equals("de.robv.android.xposed.installer")) {
+                    if (shieldPackage.contains(info.packageName)) {
                         iterator.remove();
                         //                XposedBridge.log("remove:");
                         break;
                     }
                 }
-
+                installedPackages.addAll(XposeUtil.generateRandomPackage(mContext));
                 param.setResult(installedPackages);
             }
         });
         XposedHelpers.findAndHookMethod(packageManager.getClass(), "getPackageInfo", String.class, int.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if ("de.robv.android.xposed.installer".equals(param.args[0])) {
+                if (shieldPackage.contains(param.args[0])) {
 
                     param.setResult(null);
                 }
@@ -475,7 +444,7 @@ public class XCheat implements IXposedHookLoadPackage {
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getPhoneType", new Object[]{});
         addHookMethod(lpp.packageName, TelephonyManager.class.getName(), lpp.classLoader, "getSimState", new Object[]{});
 
-
+        addHookMethod(lpp.packageName, WifiManager.class.getName(),lpp.classLoader,"getScanResults",new Object[]{});
         addHookMethod(lpp.packageName, WifiInfo.class.getName(), lpp.classLoader, "getMacAddress", new Object[]{});
         addHookMethod(lpp.packageName, WifiInfo.class.getName(), lpp.classLoader, "getSSID", new Object[]{});
         addHookMethod(lpp.packageName, WifiInfo.class.getName(), lpp.classLoader, "getBSSID", new Object[]{});
@@ -729,7 +698,21 @@ public class XCheat implements IXposedHookLoadPackage {
                     } else {
                         XposedBridge.log("获取m_SSID为空");
                     }
-                } else if ("getMacAddress".equals(methodName)) {//mac地址
+                } else if("getScanResults".equals(methodName)){//wlan扫描到的附近所有wifi
+                    int[] num = {4,5,6,7,8,9};
+                    int num_sure = num[new Random().nextInt(6)];
+                    List<ScanResult> scanResultList = (List<ScanResult>) param.getResult();
+                    int length = scanResultList.size()>num_sure?num_sure:scanResultList.size();
+                    for(int i=0;i<length;i++){
+                        ScanResult scanResult = scanResultList.get(i);
+                        scanResult.SSID = DataUtil.generateSSID();
+                    }
+                    //移除多余的ssid
+                    if(scanResultList.size()>length)
+                        for(int i = length;i<scanResultList.size();i++)
+                            scanResultList.remove(i);
+                    param.setResult(scanResultList);
+                }else if ("getMacAddress".equals(methodName)) {//mac地址
                     String m_macAddress = bean.getMac();
                     if (!TextUtils.isEmpty(m_macAddress)) {
                         MLog.d("Xposed", "修改m_macAddress");

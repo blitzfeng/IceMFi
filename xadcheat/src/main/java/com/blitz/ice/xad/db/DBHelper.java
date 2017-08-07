@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat.db;
+package com.blitz.ice.xad.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

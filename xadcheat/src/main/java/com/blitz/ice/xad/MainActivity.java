@@ -1,35 +1,24 @@
-package com.blitz.ice.xadcheat;
+package com.blitz.ice.xad;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.blitz.ice.xadcheat.db.DBDao;
-import com.blitz.ice.xadcheat.db.DeviceBean;
-import com.blitz.ice.xadcheat.utils.DataUtil;
+import com.blitz.ice.xad.db.DBDao;
+import com.blitz.ice.xad.db.DeviceBean;
+import com.blitz.ice.xad.utils.DataUtil;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,15 +35,18 @@ public class MainActivity extends AppCompatActivity {
         String ss = DataUtil.getRandom(15,0);
         System.out.println("ss:"+ss);
 
-/*System.out.println("n:"+n()+"--"+m());
+System.out.println("n:"+n()+"--"+m());
         System.out.println("a:"+a(n()+m()));
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        List<ScanResult> scanResultList = wifiManager.getScanResults();
+        for(ScanResult result:scanResultList)
+            System.out.println("result:"+result.BSSID+"---"+result.SSID);
         Log.d("wifiInfo", wifiInfo.toString());
         Log.d("SSID",wifiInfo.getSSID());
         Log.d("BSSID",wifiInfo.getBSSID());
         Log.d("mac",wifiInfo.getMacAddress());
-
+/*
         TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(TELEPHONY_SERVICE);
         Log.d("networktype",telephonyManager.getNetworkType()+"");
      //   Log.d("phonenum",telephonyManager.getLine1Number());
@@ -69,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
         dbDao = new DBDao(this);
 
         Log.d("ssid","--"+DataUtil.generateSSID());
+
+
     }
     public static String n()
     {

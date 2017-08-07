@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat;
+package com.blitz.ice.xad;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

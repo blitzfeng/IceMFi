@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat.db;
+package com.blitz.ice.xad.db;
 
 /**
  * Created by blitzfeng on 2017/7/19.

@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat.utils;
+package com.blitz.ice.xad.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -166,7 +166,7 @@ public class DataUtil {
     public static String generateSSID(){
         int[] num = {5,6,7,8};
         Random random = new Random();
-        return getRandom(num[random.nextInt(4)],3);
+        return getRandomHeaderFooter(0)+getRandom(num[random.nextInt(4)],4)+getRandomHeaderFooter(1);
     }
     public static String generateBSSID(){
         return getRandom(2,1)+":"+getRandom(2,1)+":"+getRandom(2,1)+":"+getRandom(2,1);
@@ -259,6 +259,11 @@ public class DataUtil {
             number = Arrays.asList( "a", "b", "c", "d", "e", "f", "g", "h",
                     "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z");
             total = 26;
+        }else if(type == 4){//wifi名称特殊字符
+            number = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h",
+                    "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "D", "G",
+                    "L", "O", "S", "U", "X", "Z","-","_");
+            total = 47;
         }
 
 
@@ -266,6 +271,19 @@ public class DataUtil {
             buffer.append(number.get((int) (Math.random() * total)));
         }
         return buffer.toString();
+    }
+
+    public static String getRandomHeaderFooter(int type){
+        List<String> number =new ArrayList<>();
+        int total = 0;
+        if(type == 0){//header
+            number = Arrays.asList("","TP-LINK_","","");
+            total = 4;
+        }else if(type == 1){//footer
+            number = Arrays.asList("_5G","","_2.4G","","","","","_5G");
+            total = 8;
+        }
+        return number.get((int) (Math.random() * total));
     }
 
 }

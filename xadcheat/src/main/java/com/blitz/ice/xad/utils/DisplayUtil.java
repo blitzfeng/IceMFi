@@ -1,4 +1,4 @@
-package com.blitz.ice.xadcheat.utils;
+package com.blitz.ice.xad.utils;
 
 import android.content.Context;
 import android.util.DisplayMetrics;

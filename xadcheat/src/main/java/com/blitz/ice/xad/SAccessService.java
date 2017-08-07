@@ -1,9 +1,8 @@
-package com.blitz.ice.xadcheat;
+package com.blitz.ice.xad;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
